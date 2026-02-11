@@ -1,0 +1,318 @@
+/* ===============================
+   🎨 ESTILO GENERAL DEL PUZZLE
+   =============================== */
+
+body {
+    background: url("../img/fondo_mate.png") no-repeat center center fixed !important;
+    background-size: cover;
+    color: #f5f5f5;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    min-height: 100vh;
+
+    padding-top: 40px;
+    gap: 20px;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.65); /* oscurece un poco la imagen */
+    z-index: -1;
+}
+
+h1 {
+    margin: 0;
+    font-weight: 700;
+    color: #2d3f8d;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+#topbar {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+button,
+select {
+    padding: 7px 16px;
+    border-radius: 8px;
+    border: 1px solid #496adc;
+    background: #ffffff;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: 0.15s ease-in-out;
+}
+
+button:hover,
+select:hover {
+    background: #e6ecff;
+}
+
+button:active {
+    transform: scale(0.95);
+}
+
+/* ===============================
+   🧩 CONTENEDOR DEL JUEGO
+   =============================== */
+
+.game-container {
+    width: 100%;
+    max-width: 600px;
+    padding: 1.5rem;
+    background: #1e1e1e;
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    box-sizing: border-box; /* 🔥 Evita que padding haga crecer el ancho */
+    margin: 0 auto; /* 🔥 Centra en pantallas grandes */
+}
+
+/* Tablets y móviles grandes */
+@media (max-width: 768px) {
+    .game-container {
+        max-width: 95vw; /* deja un pelín de margen a los lados */
+        padding: 1rem;
+    }
+}
+
+/* Móviles pequeños */
+@media (max-width: 480px) {
+    .game-container {
+        max-width: 90vw; /* aún más margen lateral */
+        padding: 0.75rem; /* menos espacio interior */
+        border-radius: 1rem;
+    }
+}
+
+/* --- FORZAR el ranking debajo y centrado --- */
+.ranking-container {
+    width: 100%;
+    max-width: 320px; /* MÁS PEQUEÑO */
+    margin: 25px auto; /* CENTRADO */
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.25); /* semitransparente */
+    border-radius: 12px;
+    text-align: center;
+}
+
+/* Título más pequeño */
+.ranking-container h2 {
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+    color: #ffd700;
+}
+
+/* Quitar los puntos de las listas del ranking */
+.ranking-container ul {
+    list-style: none; /* quita los bullets */
+    margin: 0;
+    padding-left: 0; /* quita sangrado izquierdo */
+}
+
+/* (Opcional) un poco de espacio entre filas */
+.ranking-container li {
+    margin-bottom: 4px;
+}
+
+/* Lista centrada */
+#rankingList {
+    list-style: none;
+    padding: 0;
+    margin: 0 auto;
+    width: 100%;
+}
+
+/* Cada entrada más pequeña */
+#rankingList li {
+    font-size: 0.95rem;
+    background: rgba(255, 255, 255, 0.15);
+    margin: 6px 0;
+    padding: 8px 10px;
+    border-radius: 8px;
+    text-align: left;
+}
+
+/* Hover bonito */
+#rankingList li:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+/* Centramos el enlace usando flex o block */
+.back-link {
+    display: block; /* Con esto ya lo centra */
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+    color: #f5f5f5;
+}
+
+.back-link:hover {
+    background: #666;
+    transform: translateY(-2px);
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+/* ===============================
+   ❤️ HUD / VIDAS / INFO
+   =============================== */
+
+#hud {
+    display: flex;
+    gap: 2.5rem;
+    font-size: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+#lives span {
+    font-size: 1.5rem;
+    margin-right: 2px;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15));
+}
+
+/* ===============================
+   🧮 TABLERO DE ECUACIONES
+   =============================== */
+
+#board {
+    max-width: 95%;
+    display: block;
+    padding: 16px;
+    background: #fff8d8;
+    border-radius: 14px;
+    border: 2px solid #ecdca4;
+    box-shadow:
+        0 3px 8px rgba(0, 0, 0, 0.15),
+        inset 0 0 6px rgba(255, 255, 255, 0.6);
+    margin-bottom: 10px;
+}
+
+.row {
+    display: flex;
+}
+
+/* 🟨 CELDAS */
+.cell {
+    width: 50px;
+    height: 50px;
+    border: 1px solid #c7b57a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    box-sizing: border-box;
+    border-radius: 6px;
+    transition: 0.15s ease;
+    color: #000 !important;
+}
+
+.cell.static {
+    background: #ffe7a3;
+}
+
+.cell.blank {
+    background: #ffeeb8;
+    cursor: pointer;
+}
+
+.cell.blank:hover {
+    background: #ffefc9;
+    transform: translateY(-2px);
+}
+
+.cell.empty {
+    border: none;
+    background: transparent;
+}
+
+/* Cuando una ecuación está correcta */
+.equation-ok {
+    box-shadow: inset 0 0 0 3px #6fd56e;
+    background: #e4ffd8 !important;
+}
+
+/* Error visual */
+.cell.wrong-flash {
+    animation: flashRed 0.3s ease;
+}
+
+@keyframes flashRed {
+    0% {
+        background: #ffbfbf;
+    }
+    100% {
+        background: #ffeeb8;
+    }
+}
+
+/* ===============================
+   🔢 FICHAS / NÚMEROS
+   =============================== */
+
+#numbers {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
+    gap: 12px;
+    margin-top: 12px;
+}
+
+/* Móviles: máximo 6 por fila */
+@media (max-width: 480px) {
+    #numbers {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+.num-tile {
+    width: 54px;
+    height: 54px;
+    border-radius: 8px;
+    border: 2px solid #425cd0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    cursor: pointer;
+    background: #e5ebff;
+    color: #000 !important;
+    font-weight: 600;
+    transition: 0.15s ease;
+}
+
+.num-tile:hover {
+    background: #d9e2ff;
+    transform: translateY(-2px);
+}
+
+.num-tile.selected {
+    outline: 3px solid #ff9800;
+    background: #fff4d2;
+}
+
+.num-tile.used {
+    opacity: 0.35;
+    cursor: default;
+}
+
+/* ===============================
+   💬 MENSAJE DE ESTADO
+   =============================== */
+
+#message {
+    min-height: 1.6rem;
+    font-weight: 700;
+    text-align: center;
+    color: #2d2d2d;
+    margin-top: 6px;
+}

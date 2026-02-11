@@ -1,0 +1,94 @@
+{% extends "base.html" %} {% block title %}🎲 Juego de Tablero JCM{% endblock %} {% block extra_css
+%}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/tablero_oca.css') }}" />
+{% endblock %} {% block content %}
+<div class="game-container tablero-container">
+    <h1>🎲 Juego de Tablero JCM</h1>
+    <p>De 1 a 6 jugadores · 35 casillas · Penalizaciones y casillas especiales</p>
+
+    <a class="btn-secondary back-link-top" href="{{ url_for('main.home') }}">
+        ← Volver al inicio
+    </a>
+
+    <div class="modo-links">
+        <a class="btn-primary" href="{{ url_for('main.tablero_oca') }}">🎲 Tablero (local)</a>
+        <a class="btn-secondary" href="{{ url_for('main.tablero_oca_online') }}">
+            🌐 Tablero Online
+        </a>
+    </div>
+
+    <!-- 👇 Contenedor principal del juego -->
+    <main id="tablero_principal" class="tablero-main">
+        <section id="configuracion" class="panel-config">
+            <h2>Configuración de partida</h2>
+
+            <div class="config-block">
+                <label for="numJugadores">Número de jugadores (1-6):</label>
+                <input type="number" id="numJugadores" min="1" max="6" value="2" />
+                <button id="iniciarJuego">Iniciar Juego</button>
+            </div>
+        </section>
+
+        <section id="nombresJugadores" class="panel-nombres"></section>
+
+        <section class="panel-tablero">
+            <div id="salida" class="casilla casilla-salida">
+                <span class="salida-label">SALIDA</span>
+                <div id="salida-fichas"></div>
+            </div>
+
+            <div id="tablero" class="tablero"></div>
+        </section>
+
+        <section class="panel-controles">
+            <div class="zona-dado">
+                <button id="tirarDado">Tirar dado</button>
+                <div id="dadoVisual" class="dado-visual"></div>
+            </div>
+
+            <div id="turnoJugador"></div>
+            <div id="estadoJuego"></div>
+            <button id="mostrarReglas">Mostrar Reglas</button>
+        </section>
+
+        <section class="reglas">
+            <h2>Cómo funciona el juego</h2>
+
+            <p><strong>🎯 Objetivo:</strong> llegar <strong>exactamente</strong> a la casilla 55.
+                El primer jugador que lo consiga gana la partida.</p>
+
+            <p><strong>🎲 Tablero:</strong> 55 casillas numeradas.</p>
+
+            <h3>Casillas especiales</h3>
+            <ul>
+                <li>⚡ <strong>Impulso</strong> (casillas 5 y 22): avanzas <strong>2 casillas extra</strong>.</li>
+                <li>⛓️ <strong>Cárcel</strong> (casillas 12 y 46): <strong>pierdes un turno</strong>.</li>
+                <li>🟩 <strong>Trampolín</strong> (casillas 18 y 36): te mueves automáticamente
+                    <strong>de una a la otra</strong> (ida y vuelta).</li>
+                <li>⬅️ <strong>Retroceso</strong> (casilla 40): retrocedes <strong>7 casillas</strong>.</li>
+                <li>⏪ <strong>Gran retroceso</strong> (casilla 50): retrocedes <strong>25 casillas</strong>.</li>
+                <li>💀 <strong>Muerte</strong> (casilla 34): vuelves a la <strong>salida</strong>.</li>
+            </ul>
+
+            <p><em>⚠️ Si el dado te hace pasar de la casilla 55, deberás esperar a sacar
+                el número exacto.</em></p>
+        </section>
+
+
+        <a class="btn-secondary back-link-top" href="{{ url_for('main.home') }}">
+            ← Volver al inicio
+        </a>
+    </main>
+
+    <!-- Overlay de ganador -->
+    <div id="winnerOverlay" class="winner-overlay">
+        <div class="winner-card">
+            <h2>🎉 ¡Ganador!</h2>
+            <p id="winnerName"></p>
+            <button id="closeWinner">Cerrar</button>
+        </div>
+    </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script src="{{ url_for('static', filename='js/tablero_oca.js') }}"></script>
+{% endblock %}

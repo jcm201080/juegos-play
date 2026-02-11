@@ -1,0 +1,84 @@
+[33mdddfc7c[m[33m ([m[1;36mHEAD -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m)[m Penalización en tablero, solo local
+[33m2974f6d[m Reorganiza bingo (classic/online), selector home y mejoras UI
+[33m7517aeb[m Ranking y bolas
+[33ma31b3da[m reparación bingo
+[33m2334885[m Ajedrez online: reloj, rendición correcta y mejoras UI
+[33mbccee6f[m chore: lint, format and minor UI cleanup
+[33m449a0c1[m Mejora bingo classic x y puntos
+[33mf5e2df2[m Ajuste ancho y grid
+[33m2e15355[m Fix bingo classic: namespaces + autoplay background task
+[33m430bf3e[m Fix: restaurar bingo.css clásico (separar estilos classic y online)
+[33m3fe4b86[m Dashboard: estadísticas de bingo y top jugadores + separación CSS
+[33m772413f[m Add config validation and safe deploy script
+[33m5a4e1ae[m Puntuación y Salas mismos jugadores
+[33me9fec6c[m Ajuste de reglas
+[33m97c3541[m Retoques
+[33md81b68b[m Refactor bingo: separa classic y online, añade lobby y estructura online
+[33m0e6a922[m Orden bolas historial
+[33m4d96c5a[m retoque de fallo
+[33mb88ffce[m reparción bd
+[33ma259d3b[m registro partidas bingo
+[33m80f8038[m Bingo: cruz (X), validaciones, UX botones y avisos
+[33m2c0252a[m Dashboard admin: visitas, últimas visitas y gráfico por día
+[33mc37cb6b[m cuenta visitas principal
+[33mc01efde[m cambio auth
+[33m6b7390b[m Dashboard admin con estilos y control de visitas
+[33m91d73a8[m Dashboard admin y sistema de visitas
+[33m92c99c6[m juego tablero adaptado móviles
+[33m5676b6f[m Bingo y accesos con login
+[33m75b7653[m Cambios nombre
+[33mff9df7a[m feat(bingo): mejoras UI, avisos linea/bingo y responsive
+[33m5dd2207[m Cambios estilos
+[33m6874a3d[m feat(bingo): multi-carton support with server-client sync
+[33m0e429df[m feat(bingo): añadir sistema de vidas y feedback visual
+[33m34eb034[m Mejoras bingo: autoplay, historial y UI
+[33m56722d8[m Bingo online: validaciones, sockets, UI y ajustes visuales
+[33m0bda095[m Mejoras bingo autoplay
+[33md7b7e79[m cambios y mejoras bingo
+[33m201046c[m MOdidficadión bd
+[33mce1188e[m Fix session cookies and production config
+[33m3374f6a[m Add Bingo Online game (private access)
+[33m4d865f9[m Fix logout session and restrict Bingo access to jcm
+[33m30b696a[m cambio iconos
+[33mf8ce004[m Unificar estilos botones ajedrez y limpiar lint
+[33ma5c1a25[m Reparación online
+[33m4add33f[m Cambio socket.py
+[33m637f052[m Tablero online
+[33m20ec14b[m Fix routes: remove /juegos prefix and restore default Socket.IO paths
+[33me4a5669[m Remove static_url_path, rely on nginx for /juegos
+[33m64c2a9b[m Add /juegos prefix to main blueprint
+[33m8c5efea[m Remove static_url_path, rely on nginx for /juegos
+[33m159bda2[m Fix static paths and add python-dotenv dependency
+[33mfa42b80[m Adapt games app to /juegos path (static and socket.io)
+[33m76d156c[m Fix castling and king move logic
+[33mf9f64f0[m Limpiar gitignore y preparar despliegue en VPS
+[33me6a8d91[m Rename all chess SVGs to lowercase
+[33m4c2347d[m Temp rename chess SVGs to fix case sensitivity
+[33m1cb944f[m requeriments socketio
+[33ma4f6d0d[m ♟️ Ajedrez online casi listo
+[33m92e1fb3[m ♟️ Ajedrez local completo: sonidos, SVG, tablas (repetición y ahogado) y mejoras de UI
+[33m1dd361c[m Mejoras ajedrez: selección visual, enroque legal, reinicio y sonidos
+[33m2232c8e[m Con jaque
+[33ma0252db[m Comienzo de chess
+[33mc9609c4[m cambio ficha tablero
+[33ma679fb3[m aplicacion instalable
+[33m840a001[m Fix responsive Cuatro en Raya en móvil
+[33m4e173f3[m cuatro en raya
+[33m5b8d39d[m tres en raya
+[33m8180cc1[m con juego online
+[33m02b7211[m cambios base de dato
+[33m7a20b02[m juego colores inglés
+[33mae8a83c[m Ajustes responsive del puzzle + mejoras CSS
+[33md505da0[m cambios puzzle para moviles
+[33m16b8d1a[m Añadir .gitignore para excluir node_modules, users.db y VSCode
+[33mb649c44[m Formato con Prettier + limpieza ESLint + mejoras en juegos
+[33m95ca434[m Ordenar puzzle
+[33m17e11ca[m Mejoras responsive + posición de fichas en tablero + estilos puzzle
+[33m419e1c6[m routes, ranking, login ..
+[33m4320e7a[m juego puzzle añadido
+[33mbfb844f[m pequeños retoques de nombre y sonido
+[33m939771e[m ampliación, sonidos, teclas....
+[33m3a8e207[m cambio img y arreglos
+[33m5a42021[m juego del tablero
+[33m26b24c3[m Quitar referencia a submódulo y añadir juegoMateJCM como carpeta normal
+[33mbe228e3[m Añadida página principal y reorganización del proyecto
