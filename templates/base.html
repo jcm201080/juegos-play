@@ -96,72 +96,117 @@
 
         <!-- 🔐 MODAL GLOBAL DE AUTENTICACIÓN -->
         <div id="authModal" class="auth-modal hidden">
+
+            <!-- Fondo oscuro -->
             <div class="auth-modal-backdrop"></div>
 
+            <!-- Caja del modal -->
             <div class="auth-modal-content auth-card">
+
+                <!-- Botón cerrar -->
                 <button id="closeAuthBtn" class="auth-close-btn">✕</button>
 
-                <!-- 🔒 MENSAJE LOGIN REQUERIDO -->
+                <!-- 🔒 Mensaje login requerido -->
                 <div id="loginHint" class="login-hint hidden">
                     🔒 Necesitas iniciar sesión para jugar
                 </div>
 
-                <!-- Invitado -->
+                <!-- ========================= -->
+                <!-- 👤 VISTA INVITADO -->
+                <!-- ========================= -->
                 <div id="auth-guest">
+
                     <h2>Tu cuenta</h2>
                     <p class="auth-text">
-                        Inicia sesión o regístrate para guardar tus puntuaciones y progresos en
-                        todos los juegos.
+                        Inicia sesión o regístrate para guardar tus puntuaciones y progresos.
                     </p>
 
+                    <!-- Tabs -->
+                    <div class="auth-tabs">
+                        <button id="tabLogin" class="auth-tab active">Iniciar sesión</button>
+                        <button id="tabRegister" class="auth-tab">Crear cuenta</button>
+                    </div>
+
+                    <!-- LOGIN -->
                     <form id="loginForm" class="auth-form">
-                        <h3>Iniciar sesión</h3>
-                        <label
-                            >Usuario
-                            <input id="loginUsername" type="text" required />
+
+                        <label>
+                            Email
+                            <input id="loginEmail" type="email" required />
                         </label>
-                        <label
-                            >Contraseña
+
+                        <label>
+                            Contraseña
                             <input id="loginPassword" type="password" required />
                         </label>
+
                         <button type="submit" class="btn-primary">Entrar</button>
+
+                        <a href="#" id="forgotPasswordLink" class="auth-link">
+                            ¿Olvidaste tu contraseña?
+                        </a>
+
                         <p class="auth-message" id="loginMessage"></p>
                     </form>
 
-                    <hr class="auth-divider" />
+                    <!-- REGISTER -->
+                    <form id="registerForm" class="auth-form hidden">
 
-                    <form id="registerForm" class="auth-form">
-                        <h3>Crear nueva cuenta</h3>
-                        <label
-                            >Usuario
+                        <label>
+                            Email
+                            <input id="registerEmail" type="email" required />
+                        </label>
+
+                        <label>
+                            Usuario
                             <input id="registerUsername" type="text" required />
                         </label>
-                        <label
-                            >Contraseña
+
+                        <label>
+                            Contraseña
                             <input id="registerPassword" type="password" required />
                         </label>
+
                         <button type="submit" class="btn-secondary">Registrarse</button>
+
                         <p class="auth-message" id="registerMessage"></p>
                     </form>
+
                 </div>
 
-                <!-- Logueado -->
+                <!-- ========================= -->
+                <!-- 👤 VISTA LOGUEADO -->
+                <!-- ========================= -->
                 <div id="auth-logged" class="hidden">
+
                     <h2>Bienvenido 👋</h2>
+
                     <p class="auth-text">
                         Estás conectado como <strong id="currentUsername"></strong>.
                     </p>
+
                     <p class="auth-text-small">
-                        🏆 Mejor puntuación global: <span id="currentBestScore">0</span><br />
-                        ⭐ Puntuación total: <span id="currentTotalScore">0</span>
+                        🏆 Mejor puntuación global:
+                        <span id="currentBestScore">0</span><br />
+                        ⭐ Puntuación total:
+                        <span id="currentTotalScore">0</span>
                     </p>
 
-                    <button id="goGamesBtn" class="btn-primary">🎮 Ir a los juegos</button>
+                    <button id="goGamesBtn" class="btn-primary">
+                        🎮 Ir a los juegos
+                    </button>
 
-                    <button id="logoutBtn" class="btn-link-danger">Cerrar sesión</button>
+                    <button id="logoutBtn" class="btn-link-danger">
+                        Cerrar sesión
+                    </button>
+
                 </div>
+
             </div>
         </div>
+
+        
+        
         <!-- Socket.IO CLIENTE (GLOBAL) -->
         <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 

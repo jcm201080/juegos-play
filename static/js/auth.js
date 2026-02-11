@@ -3,14 +3,11 @@
 const API_BASE = window.location.origin;
 const STORAGE_KEY = "jcm_user";
 
-// Usuario actual disponible para todos los scripts
 window.JCM_USER = null;
-
-// URL de destino tras login (si procede)
 window.JCM_NEXT_URL = null;
 
 // ===============================
-// 🌍 FUNCIONES GLOBALES (APP)
+// 🌍 FUNCIONES GLOBALES
 // ===============================
 
 window.closeLoginModal = function () {
@@ -19,7 +16,6 @@ window.closeLoginModal = function () {
 
     authModal.classList.add("hidden");
 
-    // Ocultar mensaje al cerrar
     const hint = document.getElementById("loginHint");
     if (hint) hint.classList.add("hidden");
 };
@@ -30,7 +26,6 @@ window.openLoginModal = function () {
 
     authModal.classList.remove("hidden");
 
-    // Mostrar aviso SOLO si NO hay usuario
     const hint = document.getElementById("loginHint");
     if (!window.JCM_USER && hint) {
         hint.classList.remove("hidden");
@@ -39,23 +34,21 @@ window.openLoginModal = function () {
     }
 };
 
-function closeModal() {
-    document.querySelector(".modal")?.classList.remove("open");
-}
-
 document.addEventListener("DOMContentLoaded", () => {
-    // --- ELEMENTOS DE CABECERA ---
+
+    // ===============================
+    // 📌 ELEMENTOS
+    // ===============================
+
     const openAuthBtn = document.getElementById("openAuthBtn");
     const headerUsernameBox = document.getElementById("headerUsernameBox");
     const headerUsernameText = document.getElementById("headerUsernameText");
     const headerLogoutBtn = document.getElementById("headerLogoutBtn");
     const headerHistoryLink = document.getElementById("headerHistoryLink");
 
-    // --- ELEMENTOS DEL MODAL ---
     const authModal = document.getElementById("authModal");
     const closeAuthBtn = document.getElementById("closeAuthBtn");
 
-    // --- FORMULARIOS DEL MODAL ---
     const loginForm = document.getElementById("loginForm");
     const registerForm = document.getElementById("registerForm");
 
@@ -68,9 +61,41 @@ document.addEventListener("DOMContentLoaded", () => {
     const currentUsernameSpan = document.getElementById("currentUsername");
     const currentBestScoreSpan = document.getElementById("currentBestScore");
     const currentTotalScoreSpan = document.getElementById("currentTotalScore");
-    const logoutBtn = document.getElementById("logoutBtn");
 
+    const logoutBtn = document.getElementById("logoutBtn");
     const goGamesBtn = document.getElementById("goGamesBtn");
+
+    const tabLogin = document.getElementById("tabLogin");
+    const tabRegister = document.getElementById("tabRegister");
+
+    const forgotPasswordLink = document.getElementById("forgotPasswordLink");
+
+    // ===============================
+    // 🎛 Tabs Login / Register
+    // ===============================
+
+    if (tabLogin && tabRegister && loginForm && registerForm) {
+
+        tabLogin.addEventListener("click", () => {
+            tabLogin.classList.add("active");
+            tabRegister.classList.remove("active");
+
+            loginForm.classList.remove("hidden");
+            registerForm.classList.add("hidden");
+        });
+
+        tabRegister.addEventListener("click", () => {
+            tabRegister.classList.add("active");
+            tabLogin.classList.remove("active");
+
+            registerForm.classList.remove("hidden");
+            loginForm.classList.add("hidden");
+        });
+    }
+
+    // ===============================
+    // 🎮 Botón ir a juegos
+    // ===============================
 
     if (goGamesBtn) {
         goGamesBtn.addEventListener("click", () => {
@@ -89,22 +114,21 @@ document.addEventListener("DOMContentLoaded", () => {
     if (openAuthBtn) openAuthBtn.addEventListener("click", window.openLoginModal);
     if (closeAuthBtn) closeAuthBtn.addEventListener("click", window.closeLoginModal);
 
-    // Cerrar si haces clic en el fondo oscuro
     if (authModal) {
         const backdrop = authModal.querySelector(".auth-modal-backdrop");
         if (backdrop) backdrop.addEventListener("click", window.closeLoginModal);
     }
 
-    // ============================================================
-    // 👤 GESTIÓN DE USUARIO (LOCALSTORAGE)
-    // ============================================================
+    // ===============================
+    // 👤 LOCALSTORAGE
+    // ===============================
+
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
         try {
             const user = JSON.parse(saved);
             if (user && user.id) window.JCM_USER = user;
-        } catch (e) {
-            console.error("Error parsing stored user:", e);
+        } catch {
             localStorage.removeItem(STORAGE_KEY);
         }
     }
@@ -121,13 +145,13 @@ document.addEventListener("DOMContentLoaded", () => {
         updateAuthUI();
     }
 
-    // ============================================================
-    // 🎨 ACTUALIZAR INTERFAZ (header + modal)
-    // ============================================================
+    // ===============================
+    // 🎨 ACTUALIZAR UI
+    // ===============================
+
     function updateAuthUI() {
         const user = window.JCM_USER;
 
-        // ----- Modal -----
         if (authGuest && authLogged) {
             if (user) {
                 authGuest.classList.add("hidden");
@@ -135,15 +159,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 if (currentUsernameSpan) currentUsernameSpan.textContent = user.username;
                 if (currentBestScoreSpan) currentBestScoreSpan.textContent = user.best_score ?? 0;
-                if (currentTotalScoreSpan)
-                    currentTotalScoreSpan.textContent = user.total_score ?? 0;
+                if (currentTotalScoreSpan) currentTotalScoreSpan.textContent = user.total_score ?? 0;
+
             } else {
                 authGuest.classList.remove("hidden");
                 authLogged.classList.add("hidden");
             }
         }
 
-        // ----- Cabecera -----
         if (openAuthBtn) openAuthBtn.classList.toggle("hidden", !!user);
 
         if (headerUsernameBox && headerUsernameText) {
@@ -156,73 +179,59 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         if (headerLogoutBtn) headerLogoutBtn.classList.toggle("hidden", !user);
-
-        // ----- Enlace "Historial" -----
         if (headerHistoryLink) headerHistoryLink.classList.toggle("hidden", !user);
 
-        // 🔔 Avisar al resto de la app (juegos) de que el usuario ha cambiado
-        window.dispatchEvent(
-            new CustomEvent("jcm:user-changed", {
-                detail: { user },
-            })
-        );
+        window.dispatchEvent(new CustomEvent("jcm:user-changed", { detail: { user } }));
     }
 
-    // Aplicar estado inicial (lo que haya en localStorage)
     updateAuthUI();
 
-    // ============================================================
-    // 🔁 SINCRONIZAR SESIÓN REAL CON BACKEND (/api/me)
-    // ============================================================
+    // ===============================
+    // 🔁 SINCRONIZAR CON BACKEND
+    // ===============================
+
     async function syncSessionFromBackend() {
         try {
             const resp = await fetch(`${API_BASE}/api/me`, {
                 method: "GET",
-                credentials: "include",
-                headers: { Accept: "application/json" },
+                credentials: "include"
             });
 
-            if (!resp.ok) {
-                console.warn("syncSessionFromBackend HTTP", resp.status);
-                return;
-            }
+            if (!resp.ok) return;
 
             const data = await resp.json();
 
             if (data.logged_in && data.user) {
-                // ✅ Backend confirma sesión -> dejamos el usuario real
                 setUser(data.user);
-                // 👉 Guardar destino si existe
-                if (data.next_url) {
-                    window.JCM_NEXT_URL = data.next_url;
-                }
+                if (data.next_url) window.JCM_NEXT_URL = data.next_url;
             } else {
-                // ✅ Backend dice "no hay sesión" -> limpiamos localStorage para evitar falso logueo
                 clearUser();
             }
+
         } catch (e) {
-            console.warn("No se pudo sincronizar sesión con backend:", e);
-            // No hacemos nada: mantenemos lo que haya en localStorage
+            console.warn("Error sincronizando sesión:", e);
         }
     }
 
-    // Llamar al arrancar
     syncSessionFromBackend();
 
-    // ============================================================
-    // 📝 REGISTRO
-    // ============================================================
+    // ===============================
+    // 📝 REGISTER
+    // ===============================
+
     if (registerForm) {
         registerForm.addEventListener("submit", async (e) => {
             e.preventDefault();
+
             registerMessage.textContent = "";
             registerMessage.className = "auth-message";
 
+            const email = document.getElementById("registerEmail").value.trim();
             const username = document.getElementById("registerUsername").value.trim();
             const password = document.getElementById("registerPassword").value.trim();
 
-            if (!username || !password) {
-                registerMessage.textContent = "Rellena usuario y contraseña.";
+            if (!email || !username || !password) {
+                registerMessage.textContent = "Rellena todos los campos.";
                 registerMessage.classList.add("error");
                 return;
             }
@@ -230,9 +239,9 @@ document.addEventListener("DOMContentLoaded", () => {
             try {
                 const resp = await fetch(`${API_BASE}/api/register`, {
                     method: "POST",
-                    credentials: "include", // ✅ CLAVE para sesión
+                    credentials: "include",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ username, password }),
+                    body: JSON.stringify({ email, username, password }),
                 });
 
                 const data = await resp.json();
@@ -244,22 +253,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
 
                 setUser(data.user);
+                window.closeLoginModal();
 
-                registerMessage.textContent = "Cuenta creada correctamente.";
-                registerMessage.classList.add("ok");
-
-                setTimeout(closeModal, 600);
-            } catch (err) {
-                console.error(err);
+            } catch {
                 registerMessage.textContent = "Error de conexión con el servidor.";
                 registerMessage.classList.add("error");
             }
         });
     }
 
-    // ============================================================
+    // ===============================
     // 🔐 LOGIN
-    // ============================================================
+    // ===============================
+
     if (loginForm) {
         loginForm.addEventListener("submit", async (e) => {
             e.preventDefault();
@@ -267,11 +273,11 @@ document.addEventListener("DOMContentLoaded", () => {
             loginMessage.textContent = "";
             loginMessage.className = "auth-message";
 
-            const username = document.getElementById("loginUsername").value.trim();
+            const email = document.getElementById("loginEmail").value.trim();
             const password = document.getElementById("loginPassword").value.trim();
 
-            if (!username || !password) {
-                loginMessage.textContent = "Rellena usuario y contraseña.";
+            if (!email || !password) {
+                loginMessage.textContent = "Rellena email y contraseña.";
                 loginMessage.classList.add("error");
                 return;
             }
@@ -279,9 +285,9 @@ document.addEventListener("DOMContentLoaded", () => {
             try {
                 const resp = await fetch(`${API_BASE}/api/login`, {
                     method: "POST",
-                    credentials: "include", // ✅ CLAVE para sesión
+                    credentials: "include",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ username, password }),
+                    body: JSON.stringify({ email, password }),
                 });
 
                 const data = await resp.json();
@@ -293,51 +299,51 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
 
                 setUser(data.user);
+                window.closeLoginModal();
 
-                // 🔄 Redirigir a la página que intentó abrir
-                setTimeout(() => {
-                    // 👉 si hay destino pendiente, ir ahí
-                    if (window.JCM_NEXT_URL) {
-                        const target = window.JCM_NEXT_URL;
-                        window.JCM_NEXT_URL = null;
-                        window.location.href = target;
-                    } else {
-                        window.location.reload();
-                    }
-                }, 300);
+                if (window.JCM_NEXT_URL) {
+                    const target = window.JCM_NEXT_URL;
+                    window.JCM_NEXT_URL = null;
+                    window.location.href = target;
+                } else {
+                    window.location.reload();
+                }
 
-                loginMessage.textContent = "Sesión iniciada.";
-                loginMessage.classList.add("ok");
-
-                setTimeout(closeModal, 500);
-            } catch (err) {
-                console.error(err);
+            } catch {
                 loginMessage.textContent = "Error de conexión con el servidor.";
                 loginMessage.classList.add("error");
             }
         });
     }
 
-    // ============================================================
+    // ===============================
     // 🚪 LOGOUT
-    // ============================================================
+    // ===============================
+
     async function doLogout() {
         try {
-            // ✅ avisar al backend para borrar session["user_id"]
             await fetch(`${API_BASE}/api/logout`, {
                 method: "POST",
                 credentials: "include",
             });
-        } catch (e) {
-            console.warn("Logout backend falló:", e);
         } finally {
             clearUser();
-            closeModal();
-
             window.location.reload();
         }
     }
 
     if (logoutBtn) logoutBtn.addEventListener("click", doLogout);
     if (headerLogoutBtn) headerLogoutBtn.addEventListener("click", doLogout);
+
+    // ===============================
+    // 🔑 FORGOT PASSWORD (placeholder)
+    // ===============================
+
+    if (forgotPasswordLink) {
+        forgotPasswordLink.addEventListener("click", (e) => {
+            e.preventDefault();
+            alert("Sistema de recuperación próximamente disponible.");
+        });
+    }
+
 });

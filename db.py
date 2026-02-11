@@ -1,8 +1,20 @@
 import os
 import sqlite3
 
+
+import hashlib
+
+def hash_password(password: str) -> str:
+    return hashlib.sha256(password.encode("utf-8")).hexdigest()
+
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_NAME = os.path.join(BASE_DIR, "users.db")
+
+DB_FOLDER = os.path.join(BASE_DIR, "database")
+os.makedirs(DB_FOLDER, exist_ok=True)
+
+DB_NAME = os.path.join(DB_FOLDER, "play.db")
+
 
 def get_connection():
     conn = sqlite3.connect(DB_NAME)
@@ -20,13 +32,16 @@ def init_db():
         """
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            email TEXT NOT NULL UNIQUE,
             username TEXT NOT NULL UNIQUE,
             password_hash TEXT NOT NULL,
             best_score INTEGER DEFAULT 0,
-            total_score INTEGER DEFAULT 0,          -- 🔹 NUEVO: acumulado
+            total_score INTEGER DEFAULT 0,
             level_unlocked INTEGER DEFAULT 1,
+            role TEXT DEFAULT 'user',
             created_at TEXT DEFAULT CURRENT_TIMESTAMP
-        )
+        );
+
         """
     )
 
@@ -87,8 +102,11 @@ def init_db():
             fecha TEXT DEFAULT CURRENT_TIMESTAMP,
             ip TEXT,
             user_agent TEXT,
-            ruta TEXT
+            ruta TEXT,
+            user_id INTEGER,
+            FOREIGN KEY(user_id) REFERENCES users(id)
         )
+
         """
     )
 
@@ -141,9 +159,52 @@ def init_db():
     )
 
 
+    # ===============================
+    # 👤 USUARIOS POR DEFECTO
+    # ===============================
+
+    # ---- ADMIN ----
+    cur.execute("SELECT id FROM users WHERE email = ?", ("jcm201080@gmail.com",))
+    admin_exists = cur.fetchone()
+
+    if not admin_exists:
+        cur.execute("""
+            INSERT INTO users 
+            (email, username, password_hash, role, best_score, total_score, level_unlocked)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (
+            "jcm201080@gmail.com",
+            "jcm",
+            hash_password("1234"),
+            "admin",
+            0,
+            0,
+            1
+        ))
+
+    # ---- USER NORMAL ----
+    cur.execute("SELECT id FROM users WHERE email = ?", ("jcm201080@hotmail.com",))
+    user_exists = cur.fetchone()
+
+    if not user_exists:
+        cur.execute("""
+            INSERT INTO users 
+            (email, username, password_hash, role, best_score, total_score, level_unlocked)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (
+            "jcm201080@hotmail.com",
+            "jesus",
+            hash_password("1234"),
+            "user",
+            0,
+            0,
+            1
+        ))
 
     conn.commit()
     conn.close()
+
+
 
 
     
