@@ -84,8 +84,7 @@ def registrar_bingo(user_id, partida_id, duracion_sec):
         """
         UPDATE bingo_stats
         SET 
-            bingos = bingos + 1,
-            partidas_jugadas = partidas_jugadas + 1
+            bingos = bingos + 1
         WHERE user_id = ?
         """,
         (user_id,)
@@ -199,3 +198,86 @@ def registrar_cruz(user_id, partida_id):
 
     conn.commit()
     conn.close()
+
+
+def registrar_x(user_id, partida_id):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        "INSERT OR IGNORE INTO bingo_stats (user_id) VALUES (?)",
+        (user_id,)
+    )
+
+    cur.execute(
+        """
+        UPDATE bingo_stats
+        SET x = x + 1
+        WHERE user_id = ?
+        """,
+        (user_id,)
+    )
+
+    cur.execute(
+        """
+        INSERT INTO bingo_eventos (partida_id, user_id, tipo)
+        VALUES (?, ?, 'x')
+        """,
+        (partida_id, user_id)
+    )
+
+    conn.commit()
+    conn.close()
+
+
+def sumar_puntos_totales(user_id, puntos):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        "INSERT OR IGNORE INTO bingo_stats (user_id) VALUES (?)",
+        (user_id,)
+    )
+
+    cur.execute(
+        """
+        UPDATE bingo_stats
+        SET puntos_totales = puntos_totales + ?
+        WHERE user_id = ?
+        """,
+        (puntos, user_id)
+    )
+
+    conn.commit()
+    conn.close()
+
+
+# Obtener ranking global
+
+def obtener_ranking_classic(limit=20):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT 
+            u.username,
+            bs.partidas_jugadas,
+            bs.bingos,
+            bs.lineas,
+            bs.cruces,
+            bs.x,
+            bs.puntos_totales
+        FROM bingo_stats bs
+        JOIN users u ON u.id = bs.user_id
+        ORDER BY bs.puntos_totales DESC
+        LIMIT ?
+    """, (limit,))
+
+    rows = cur.fetchall()
+    conn.close()
+
+    ranking = []
+    for row in rows:
+        ranking.append(dict(row))
+
+    return ranking

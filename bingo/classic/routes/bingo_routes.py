@@ -2,6 +2,8 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 import random
 import string
 from routes.auth_routes import login_required
+from bingo.logic.bingo_stats import obtener_ranking_classic
+
 
 salas = {}
 codigos_validos = set()
@@ -54,3 +56,14 @@ def bingo_sala(codigo):
         codigo=codigo,
         es_host=es_host
     )
+
+
+
+
+
+@bingo_routes.route("/bingo/classic/ranking")
+@login_required
+def ranking_classic():
+    ranking = obtener_ranking_classic()
+    return render_template("bingo_classic_ranking.html", ranking=ranking)
+

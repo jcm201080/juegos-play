@@ -122,10 +122,13 @@ def init_db():
             partidas_jugadas INTEGER DEFAULT 0,
             lineas INTEGER DEFAULT 0,
             cruces INTEGER DEFAULT 0,
+            x INTEGER DEFAULT 0,
             bingos INTEGER DEFAULT 0,
             bingos_fallidos INTEGER DEFAULT 0,
+            puntos_totales INTEGER DEFAULT 0,
             FOREIGN KEY(user_id) REFERENCES users(id)
         )
+
         """
     )
 

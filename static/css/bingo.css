@@ -228,6 +228,38 @@
     transform: scale(0.98);
 }
 
+/* ===============================
+   🏆 BOTÓN VER RANKING (SALA)
+=============================== */
+
+.bingo-actions {
+    margin: 20px 0 10px;
+    text-align: center;
+}
+
+.btn-ranking {
+    display: inline-block;
+    padding: 10px 20px;
+
+    background: linear-gradient(135deg, #1e88e5, #6a1b9a);
+    color: #fff;
+
+    font-weight: 600;
+    font-size: 0.95rem;
+
+    border-radius: 30px;
+    text-decoration: none;
+
+    box-shadow: 0 0 12px rgba(106, 27, 154, 0.4);
+
+    transition: all 0.25s ease;
+}
+
+.btn-ranking:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 0 18px rgba(106, 27, 154, 0.7);
+}
+
 
 /* =========================
    BOTONES DESHABILITADOS (GENÉRICO)
@@ -710,3 +742,6 @@
     text-align: left;          /* 👈 esto es correcto */
     max-width: 420px;          /* 👈 centra el bloque */
 }
+
+
+/*Pagina de ranking por ahora classic*/

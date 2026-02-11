@@ -3,9 +3,9 @@ from flask_socketio import join_room, leave_room, emit
 
 
 # ✅ IMPORTS CORREGIDOS A CLASSIC
-from bingo.classic.logic.cartones import generar_carton
-from bingo.classic.logic.bolas import BomboBingo
-from bingo.classic.logic.validaciones import (
+from bingo.logic.cartones import generar_carton
+from bingo.logic.bolas import BomboBingo
+from bingo.logic.validaciones import (
     comprobar_linea,
     comprobar_bingo,
     comprobar_cruz,
@@ -20,13 +20,15 @@ from config import (
     BINGO_MIN_CARTONES,
 )
 
-from bingo.classic.logic.bingo_stats import (
+from bingo.logic.bingo_stats import (
     ensure_bingo_stats,
     registrar_linea,
     registrar_bingo,
     crear_partida_bingo,
     registrar_cruz,
-    registrar_partida_jugada
+    registrar_partida_jugada,
+    registrar_x,
+    sumar_puntos_totales
 )
 
 # =========================
@@ -320,6 +322,8 @@ def register_bingo_sockets(socketio):
 
                 if jugador["user_id"]:
                     registrar_linea(jugador["user_id"], sala["partida_id"])
+                    sumar_puntos_totales(jugador["user_id"], 1)
+
 
                 emit("linea_valida", {"nombre": jugador["nombre"]}, room=codigo, namespace=NAMESPACE)
                 emitir_estado_a_todos(sala)
@@ -351,6 +355,11 @@ def register_bingo_sockets(socketio):
 
                 sumar_puntos(jugador, 2)
                 emitir_ranking(socketio, codigo, sala)
+
+                if jugador["user_id"]:
+                    registrar_x(jugador["user_id"], sala["partida_id"])
+                    sumar_puntos_totales(jugador["user_id"], 2)
+
 
                 emit(
                     "x_valida",
@@ -393,6 +402,8 @@ def register_bingo_sockets(socketio):
 
                 if jugador["user_id"]:
                     registrar_cruz(jugador["user_id"], sala["partida_id"])
+                    sumar_puntos_totales(jugador["user_id"], 2)
+
 
                 emit(
                     "cruz_valida",
@@ -428,20 +439,23 @@ def register_bingo_sockets(socketio):
                 sala["en_partida"] = False
                 sala["auto"]["activo"] = False
 
-                # ✅ SUMAR PUNTOS
                 sumar_puntos(jugador, 5)
                 emitir_ranking(socketio, codigo, sala)
 
+                # Registrar partida jugada para TODOS
                 for j in sala["jugadores"].values():
                     if j["user_id"]:
                         registrar_partida_jugada(j["user_id"])
 
+                # Registrar bingo ganador
                 if jugador["user_id"]:
                     registrar_bingo(
                         jugador["user_id"],
                         sala["partida_id"],
                         len(sala["bombo"].historial) * 5,
                     )
+                    sumar_puntos_totales(jugador["user_id"], 5)
+
 
                 emit(
                     "bingo_valido",

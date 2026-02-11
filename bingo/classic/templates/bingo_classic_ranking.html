@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/bingo_ranking.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="ranking-container">
+    <h2>🏆 Ranking Classic</h2>
+
+    <table class="ranking-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Jugador</th>
+                <th>Puntos</th>
+                <th>Bingos</th>
+                <th>Partidas</th>
+                <th>Líneas</th>
+                <th>Cruces</th>
+                <th>X</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for jugador in ranking %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ jugador.username }}</td>
+                <td>{{ jugador.puntos_totales }}</td>
+                <td>{{ jugador.bingos }}</td>
+                <td>{{ jugador.partidas_jugadas }}</td>
+                <td>{{ jugador.lineas }}</td>
+                <td>{{ jugador.cruces }}</td>
+                <td>{{ jugador.x }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <br>
+    <br>
+    
+    <div class="bingo-actions">
+        <a href="{{ url_for('bingo.bingo_home') }}" class="btn-ranking">
+        ⬅ Volver
+        </a>
+    </div>
+</div>
+
+    
+
+
+{% endblock %}
