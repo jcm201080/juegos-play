@@ -204,6 +204,57 @@ def init_db():
             1
         ))
 
+        # =====================================================
+        # 🔹 TABLAS PARA EL BINGO ONLINE
+        # =====================================================
+
+        # Estadísticas acumuladas online por usuario
+        cur.execute(
+            """
+            CREATE TABLE IF NOT EXISTS bingo_online_stats (
+                user_id INTEGER PRIMARY KEY,
+                partidas_jugadas INTEGER DEFAULT 0,
+                lineas INTEGER DEFAULT 0,
+                cruces INTEGER DEFAULT 0,
+                x INTEGER DEFAULT 0,
+                bingos INTEGER DEFAULT 0,
+                bingos_fallidos INTEGER DEFAULT 0,
+                puntos_totales INTEGER DEFAULT 0,
+                FOREIGN KEY(user_id) REFERENCES users(id)
+            )
+            """
+        )
+
+        # Historial de partidas online
+        cur.execute(
+            """
+            CREATE TABLE IF NOT EXISTS bingo_online_partidas (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ganador_id INTEGER,
+                duracion_sec INTEGER,
+                jugadores INTEGER,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY(ganador_id) REFERENCES users(id)
+            )
+            """
+        )
+
+        # Eventos online
+        cur.execute(
+            """
+            CREATE TABLE IF NOT EXISTS bingo_online_eventos (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                partida_id INTEGER NOT NULL,
+                user_id INTEGER NOT NULL,
+                tipo TEXT NOT NULL,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY(partida_id) REFERENCES bingo_online_partidas(id),
+                FOREIGN KEY(user_id) REFERENCES users(id)
+            )
+            """
+        )
+
+
     conn.commit()
     conn.close()
 

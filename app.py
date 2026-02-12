@@ -58,7 +58,9 @@ from routes.chess_rooms import register_chess_rooms
 # 🎱 Bingo CLASSIC
 from bingo.classic.routes.bingo_routes import bingo_routes
 from bingo.classic.sockets.bingo_socket import register_bingo_sockets
-from bingo.routes import bingo_bp
+from bingo.routes.routes import bingo_bp# 🏆 Bingo Ranking
+from bingo.routes.ranking_routes import ranking_bp
+
 
 # 🎱 Bingo ONLINE
 from bingo.bingo_online.routes.bingo_online_routes import bingo_online_routes
@@ -160,6 +162,8 @@ app.register_blueprint(chess_routes)
 app.register_blueprint(bingo_bp)
 app.register_blueprint(bingo_routes)
 app.register_blueprint(bingo_online_routes)
+app.register_blueprint(ranking_bp)
+
 
 app.register_blueprint(admin_bp)
 

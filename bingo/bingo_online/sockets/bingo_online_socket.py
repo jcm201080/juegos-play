@@ -1,6 +1,6 @@
 import random
 
-from flask import request
+from flask import request, session
 from flask_socketio import join_room, emit, leave_room
 
 from bingo.bingo_online.state import salas_bingo_online, online_lobbies
@@ -20,6 +20,16 @@ from config import (
     BOLA_INTERVAL_SECONDS,
 )
 
+from bingo.logic.bingo_online_stats import (
+    ensure_bingo_online_stats,
+    crear_partida_online,
+    registrar_linea_online,
+    registrar_cruz_online,
+    registrar_x_online,
+    registrar_bingo_online,
+    registrar_partida_online,
+    sumar_puntos_online
+)
 
 
 
@@ -150,7 +160,21 @@ def start_online_countdown(socketio, lobby):
             }
         }
 
+        # ✅ Crear partida en BD
+        partida_id = crear_partida_online(len(lobby["players"]))
+        salas_bingo_online[codigo]["partida_id"] = partida_id
+
         for p in lobby["players"]:
+            user_id = None
+
+            # SOLO humanos tienen sesión
+            if p.get("sid"):
+                with socketio.server.session(p["sid"]) as sess:
+                    user_id = sess.get("user_id")
+
+            if user_id:
+                ensure_bingo_online_stats(user_id)
+
             salas_bingo_online[codigo]["jugadores"][p["nombre"]] = {
                 "nombre": p["nombre"],
                 "vidas": 3,
@@ -158,6 +182,7 @@ def start_online_countdown(socketio, lobby):
                 "cartones": p.get("cartones", 1),
                 "sid": p["sid"],
                 "bot": p.get("bot", False),
+                "user_id": user_id,
                 "cantado": {
                     "linea": False,
                     "cruz": False,
@@ -165,6 +190,7 @@ def start_online_countdown(socketio, lobby):
                     "bingo": False
                 }
             }
+
 
         # 🎟️ CARTONES PARA BOTS
         for nombre, jugador in salas_bingo_online[codigo]["jugadores"].items():
@@ -485,6 +511,10 @@ def register_bingo_online_sockets(socketio):
             sala["premios"]["linea"] = jugador["nombre"]  # 🔒 bloqueo global
             sumar_puntos(jugador, 1)
 
+            if jugador.get("user_id"):
+                registrar_linea_online(jugador["user_id"], sala["partida_id"])
+                sumar_puntos_online(jugador["user_id"], 1)
+
             emitir_ranking(socketio, codigo, sala)
 
             emit(
@@ -558,6 +588,11 @@ def register_bingo_online_sockets(socketio):
             sala["premios"]["cruz"] = jugador["nombre"]
             sumar_puntos(jugador, 2)
 
+            if jugador.get("user_id"):
+                registrar_cruz_online(jugador["user_id"], sala["partida_id"])
+                sumar_puntos_online(jugador["user_id"], 2)
+
+
             emitir_ranking(socketio, codigo, sala)
 
             emit(
@@ -628,6 +663,11 @@ def register_bingo_online_sockets(socketio):
             sala["premios"]["x"] = jugador["nombre"]
             sumar_puntos(jugador, 2)
 
+            if jugador.get("user_id"):
+                registrar_x_online(jugador["user_id"], sala["partida_id"])
+                sumar_puntos_online(jugador["user_id"], 2)
+
+
             emitir_ranking(socketio, codigo, sala)
 
             emit(
@@ -687,6 +727,20 @@ def register_bingo_online_sockets(socketio):
             sala["en_partida"] = False
             sumar_puntos(jugador, 5)
 
+            # ✅ Registrar partida jugada para todos humanos
+            for j in sala["jugadores"].values():
+                if j.get("user_id"):
+                    registrar_partida_online(j["user_id"])
+
+            # ✅ Registrar bingo ganador
+            if jugador.get("user_id"):
+                registrar_bingo_online(
+                    jugador["user_id"],
+                    sala["partida_id"],
+                    len(sala["bombo"].historial) * 5
+                )
+                sumar_puntos_online(jugador["user_id"], 5)
+
             emitir_ranking(socketio, codigo, sala)
 
             emit(
@@ -699,6 +753,7 @@ def register_bingo_online_sockets(socketio):
                 },
                 room=codigo
             )
+
         else:
             penalizar_jugador(jugador, 2)
 
