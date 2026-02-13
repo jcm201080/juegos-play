@@ -31,6 +31,7 @@ from bingo.logic.bingo_online_stats import (
     sumar_puntos_online
 )
 
+from config import BOT_MIN_DELAY, BOT_MAX_DELAY
 
 
 
@@ -267,7 +268,8 @@ def start_online_autoplay(socketio, codigo):
                 carton = cartones[0]
 
                 # ⏱️ pequeño retraso humano
-                socketio.sleep(random.uniform(0.4, 1.2))
+                socketio.sleep(random.uniform(BOT_MIN_DELAY, BOT_MAX_DELAY))
+
 
                 # LINEA
                 if (
