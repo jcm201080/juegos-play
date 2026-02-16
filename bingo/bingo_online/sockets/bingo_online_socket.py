@@ -166,16 +166,7 @@ def start_online_countdown(socketio, lobby):
         salas_bingo_online[codigo]["partida_id"] = partida_id
 
         for p in lobby["players"]:
-            user_id = None
-
-            # SOLO humanos tienen sesión
-            if p.get("sid"):
-                with socketio.server.session(p["sid"]) as sess:
-                    user_id = sess.get("user_id")
-
-            if user_id:
-                ensure_bingo_online_stats(user_id)
-
+            
             salas_bingo_online[codigo]["jugadores"][p["nombre"]] = {
                 "nombre": p["nombre"],
                 "vidas": 3,
@@ -183,7 +174,7 @@ def start_online_countdown(socketio, lobby):
                 "cartones": p.get("cartones", 1),
                 "sid": p["sid"],
                 "bot": p.get("bot", False),
-                "user_id": user_id,
+                "user_id": None,
                 "cantado": {
                     "linea": False,
                     "cruz": False,
@@ -216,7 +207,9 @@ def start_online_countdown(socketio, lobby):
         lobby["timer_running"] = False
         lobby["countdown"] = ONLINE_COUNTDOWN_SECONDS
 
+    
     socketio.start_background_task(run)
+
 
 
 
@@ -426,6 +419,8 @@ def register_bingo_online_sockets(socketio):
     def join_online_game(data):
         codigo = data.get("codigo")
         nombre = data.get("nombre")
+        user_id = data.get("user_id")
+
         sid = request.sid
 
         print("👉 join_online_game:", codigo, nombre, sid)
@@ -442,6 +437,12 @@ def register_bingo_online_sockets(socketio):
 
         # 🔗 Asociar SID real
         jugador["sid"] = sid
+        jugador["user_id"] = user_id   # 👈 NUEVO
+
+        if user_id:
+            ensure_bingo_online_stats(user_id)
+            print("DEBUG join:", nombre, "→ user_id:", user_id)
+
 
         join_room(codigo)
 

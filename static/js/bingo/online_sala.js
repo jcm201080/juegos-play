@@ -164,10 +164,19 @@ function renderVidas(vidas) {
 socket.on("connect", () => {
     console.log("🔌 Conectado a sala online:", codigo);
 
-    socket.emit("join_online_game", {
-        codigo,
-        nombre: playerName,
-    });
+    const esperarUsuario = setInterval(() => {
+        if (window.JCM_USER && window.JCM_USER.id) {
+            clearInterval(esperarUsuario);
+
+            console.log("✅ Usuario listo:", window.JCM_USER);
+
+            socket.emit("join_online_game", {
+                codigo,
+                nombre: playerName,
+                user_id: window.JCM_USER.id
+            });
+        }
+    }, 100);
 });
 
 // =======================
