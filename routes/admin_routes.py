@@ -23,7 +23,7 @@ def dashboard():
     visitas_por_ruta = cur.fetchall()
 
     cur.execute("""
-        SELECT ruta, fecha, origen
+        SELECT ruta, fecha, ip as origen
         FROM visitas
         ORDER BY fecha DESC
         LIMIT 20
