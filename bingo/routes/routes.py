@@ -11,3 +11,5 @@ bingo_bp = Blueprint(
 @login_required
 def bingo_home():
     return render_template("bingo/home_bingo.html")
+
+

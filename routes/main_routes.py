@@ -57,3 +57,8 @@ def track_visita():
     )
 
     return jsonify({"status": "ok"})
+
+
+@main_bp.route("/bingo-evento")
+def bingo_evento():
+    return render_template("bingo_evento.html")

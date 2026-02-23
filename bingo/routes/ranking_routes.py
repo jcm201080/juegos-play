@@ -36,3 +36,5 @@ def ranking():
         ranking_online=ranking_online,
         ranking_global=ranking_global
     )
+
+
