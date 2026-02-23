@@ -742,3 +742,27 @@ button:disabled {
 #ranking-list li span.puntos {
     color: #ffd54f;
 }
+
+
+/* =====================================================
+   BOTÓN INICIAR PARTIDA (EN EL LOBBY)
+   ===================================================== */
+   .start-now-btn {
+    margin-top: 15px;
+    padding: 10px 20px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+    transition: 0.2s;
+}
+
+.start-now-btn:hover {
+    transform: scale(1.05);
+}
+
+.hidden {
+    display: none;
+}

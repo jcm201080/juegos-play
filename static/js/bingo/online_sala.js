@@ -187,9 +187,19 @@ socket.on("lista_jugadores", (data) => {
     if (!cont) return;
 
     cont.innerHTML = "";
-    data.jugadores.forEach((nombre) => {
+
+    data.jugadores.forEach((j) => {
         const li = document.createElement("li");
-        li.textContent = nombre;
+
+        if (typeof j === "string") {
+            li.textContent = j;
+        } else {
+            li.innerHTML = `
+                <span>${j.nombre}</span>
+                <span class="mini-cartones">🔢 x${j.cartones ?? 1}</span>
+            `;
+        }
+
         cont.appendChild(li);
     });
 });

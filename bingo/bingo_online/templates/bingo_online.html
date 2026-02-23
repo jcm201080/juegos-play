@@ -34,6 +34,7 @@
         </label>
 
         <select id="numPlayers">
+            <option value="0">Libre</option>
             <option value="2">2</option>
             <option value="3">3</option>
             <option value="4">4</option>
@@ -53,6 +54,18 @@
             <option value="3">3 cartones</option>
             <option value="4">4 cartones</option>
         </select>
+        {% if session.role == "admin" %}
+        <label for="countdownTime">
+            ⏳ Tiempo de espera
+        </label>
+
+        <select id="countdownTime">
+            <option value="10">15s</option>
+            <option value="30" selected>30s</option>
+            <option value="45">45s</option>
+            <option value="90">90s</option>
+        </select>
+        {% endif %}
         
 
         <button id="startOnlineBtn" class="btn-primary">
@@ -67,6 +80,9 @@
         <p><strong>0 / 6</strong></p>
         <p class="countdown">⏳ 30s</p>
     </div>
+    <button id="startNowBtn" class="start-now-btn hidden">
+        🚀 Iniciar partida
+    </button>
 
     <!-- 👥 JUGADORES -->
     <div class="online-players">
@@ -87,6 +103,7 @@
 {% block extra_js %}
 <script>
     window.BINGO_USER = "{{ session.username or 'Invitado' }}";
+    window.BINGO_ROLE = "{{ session.role or 'user' }}";
 
 </script>
 

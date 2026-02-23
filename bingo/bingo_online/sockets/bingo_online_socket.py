@@ -52,9 +52,10 @@ def get_lobby(max_players):
     if max_players not in online_lobbies:
         online_lobbies[max_players] = {
             "players": [],
-            "max_players": max_players,
+            "max_players": max_players,  # 0 = libre
             "countdown": ONLINE_COUNTDOWN_SECONDS,
-            "timer_running": False
+            "timer_running": False,
+            "started": False
         }
     return online_lobbies[max_players]
 
@@ -95,7 +96,13 @@ def emitir_estado_a_todos(socketio, codigo, sala):
     socketio.emit(
         "lista_jugadores",
         {
-            "jugadores": [j["nombre"] for j in sala["jugadores"].values()],
+            "jugadores": [
+                {
+                    "nombre": j["nombre"],
+                    "cartones": j.get("cartones", 1)
+                }
+                for j in sala["jugadores"].values()
+            ],
             "en_partida": sala["en_partida"],
         },
         room=codigo,
@@ -108,17 +115,22 @@ def emitir_estado_a_todos(socketio, codigo, sala):
 # =====================================================
 
 def fill_with_bots(lobby):
+    if lobby["max_players"] <= 0:
+        return
+
     faltan = lobby["max_players"] - len(lobby["players"])
-    nombres = random.sample(BOT_NAMES, faltan)
+    if faltan <= 0:
+        return
+
+    nombres = random.sample(BOT_NAMES, min(faltan, len(BOT_NAMES)))
 
     for nombre in nombres:
         lobby["players"].append({
             "sid": None,
             "nombre": nombre,
             "bot": True,
-            "cartones":1
+            "cartones": 1
         })
-
 
 
 
@@ -129,19 +141,31 @@ def fill_with_bots(lobby):
 def start_online_countdown(socketio, lobby):
 
     def run():
-        while lobby["countdown"] > 0:
+        while lobby["countdown"] > 0 and not lobby.get("started"):
             socketio.sleep(1)
             lobby["countdown"] -= 1
 
             socketio.emit(
                 "online_lobby_update",
                 {
-                    "players": [p["nombre"] for p in lobby["players"]],
+                    "players": [
+                        {
+                            "nombre": p["nombre"],
+                            "cartones": p.get("cartones", 1)
+                        }
+                        for p in lobby["players"]
+                    ],
                     "countdown": lobby["countdown"],
                     "max_players": lobby["max_players"]
                 },
                 room=[p["sid"] for p in lobby["players"] if p["sid"]]
             )
+
+        # 🔒 Marcar como iniciada (anti doble inicio)
+        if lobby.get("started"):
+            return
+
+        lobby["started"] = True
 
         fill_with_bots(lobby)
 
@@ -206,6 +230,7 @@ def start_online_countdown(socketio, lobby):
         lobby["players"].clear()
         lobby["timer_running"] = False
         lobby["countdown"] = ONLINE_COUNTDOWN_SECONDS
+        lobby["started"] = False
 
     
     socketio.start_background_task(run)
@@ -388,8 +413,17 @@ def register_bingo_online_sockets(socketio):
         nombre = data.get("nombre", "Invitado")
         max_players = int(data.get("max_players", 6))
         cartones = int(data.get("cartones", 1))
+        countdown = data.get("countdown")  # 👈 NUEVO
 
         lobby = get_lobby(max_players)
+
+        # 👑 Si es admin y envía countdown personalizado
+        if (
+            countdown
+            and session.get("role") == "admin"
+            and not lobby["timer_running"]
+        ):
+            lobby["countdown"] = int(countdown)
 
         if not any(p["sid"] == sid for p in lobby["players"]):
             lobby["players"].append({
@@ -404,7 +438,13 @@ def register_bingo_online_sockets(socketio):
             start_online_countdown(socketio, lobby)
 
         emit("online_lobby_update", {
-            "players": [p["nombre"] for p in lobby["players"]],
+            "players": [
+                {
+                    "nombre": p["nombre"],
+                    "cartones": p.get("cartones", 1)
+                }
+                for p in lobby["players"]
+            ],
             "countdown": lobby["countdown"],
             "max_players": lobby["max_players"]
         })
@@ -543,6 +583,27 @@ def register_bingo_online_sockets(socketio):
                 },
                 room=sid
             )
+
+    @socketio.on("start_online_now")
+    def start_online_now(data):
+
+        if session.get("role") != "admin":
+            return
+
+        lobby = None
+
+        for l in online_lobbies.values():
+            if any(p["sid"] == request.sid for p in l["players"]):
+                lobby = l
+                break
+
+        if not lobby:
+            return
+
+        if lobby.get("started"):
+            return
+
+        lobby["countdown"] = 0
 
 
 
