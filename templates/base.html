@@ -116,6 +116,9 @@
                 <!-- ========================= -->
                 <div id="auth-guest">
 
+                    <div class="auth-update-info">
+                        🚀 Nueva versión: ahora debes iniciar sesión con tu <strong>email</strong>.
+                    </div>
                     <h2>Tu cuenta</h2>
                     <p class="auth-text">
                         Inicia sesión o regístrate para guardar tus puntuaciones y progresos.
@@ -147,6 +150,21 @@
                         </a>
 
                         <p class="auth-message" id="loginMessage"></p>
+                    </form>
+
+                    <form id="recoverForm" class="auth-form hidden">
+
+                        <label>
+                            Introduce tu email
+                            <input id="recoverEmail" type="email" required />
+                        </label>
+
+                        <button type="submit" class="btn-secondary">
+                            Enviar enlace de recuperación
+                        </button>
+
+                        <p class="auth-message" id="recoverMessage"></p>
+
                     </form>
 
                     <!-- REGISTER -->

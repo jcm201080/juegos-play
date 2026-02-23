@@ -5,6 +5,15 @@ from db import get_connection   # 👈 CAMBIADO SI db.py ESTÁ EN database
 import hashlib
 import sqlite3
 from functools import wraps
+import secrets
+from datetime import datetime, timedelta
+from flask import jsonify, render_template
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+import os
+
+
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -14,6 +23,41 @@ auth_bp = Blueprint("auth", __name__)
 # =========================
 def hash_password(password: str) -> str:
     return hashlib.sha256(password.encode("utf-8")).hexdigest()
+
+
+# =========================
+# 📧 ENVIAR EMAIL
+# =========================
+def send_reset_email(to_email, reset_link):
+    smtp_server = "smtp.gmail.com"
+    smtp_port = 587
+
+    sender_email = os.getenv("MAIL_USER")
+    sender_password = os.getenv("MAIL_PASSWORD")
+
+    message = MIMEMultipart("alternative")
+    message["Subject"] = "Recuperación de contraseña - Juegos JCM"
+    message["From"] = sender_email
+    message["To"] = to_email
+
+    html = f"""
+    <html>
+    <body style="font-family: Arial;">
+        <h2>🔐 Recuperación de contraseña</h2>
+        <p>Haz clic en el botón:</p>
+        <a href="{reset_link}">Restablecer contraseña</a>
+        <p>Expira en 30 minutos.</p>
+    </body>
+    </html>
+    """
+
+    part = MIMEText(html, "html")
+    message.attach(part)
+
+    with smtplib.SMTP(smtp_server, smtp_port) as server:
+        server.starttls()
+        server.login(sender_email, sender_password)
+        server.sendmail(sender_email, to_email, message.as_string())
 
 
 # =========================
@@ -219,3 +263,93 @@ def admin_required(f):
         return f(*args, **kwargs)
 
     return decorated
+
+
+@auth_bp.route("/recover", methods=["POST"])
+def recover_password():
+    data = request.get_json() or {}
+    email = data.get("email", "").strip()
+
+    if not email:
+        return jsonify({"success": False, "message": "Email requerido."}), 400
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("SELECT id FROM users WHERE email = ?", (email,))
+    user = cur.fetchone()
+
+    if not user:
+        conn.close()
+        return jsonify({"success": False, "message": "Email no encontrado."})
+
+    # 🔐 Generar token seguro
+    token = secrets.token_urlsafe(32)
+
+    # ⏳ Expira en 30 minutos
+    expires = (datetime.utcnow() + timedelta(minutes=30)).isoformat()
+
+    # 💾 Guardar en BD
+    cur.execute("""
+        UPDATE users
+        SET reset_token = ?, reset_expires = ?
+        WHERE id = ?
+    """, (token, expires, user["id"]))
+
+    conn.commit()
+    conn.close()
+
+    # 🖥 Enlace (modo desarrollo)
+    reset_link = url_for("auth.reset_password", token=token, _external=True)
+    send_reset_email(email, reset_link)
+    print("🔐 ENLACE DE RECUPERACIÓN:", reset_link)
+
+    return jsonify({
+        "success": True,
+        "message": "Te hemos enviado un enlace de recuperación a tu correo."
+    })
+
+
+
+@auth_bp.route("/reset/<token>", methods=["GET", "POST"])
+def reset_password(token):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT id, reset_expires
+        FROM users
+        WHERE reset_token = ?
+    """, (token,))
+    user = cur.fetchone()
+
+    if not user:
+        conn.close()
+        return "Token inválido", 400
+
+    expires = datetime.fromisoformat(user["reset_expires"])
+
+    if datetime.utcnow() > expires:
+        conn.close()
+        return "Token expirado", 400
+
+    if request.method == "POST":
+        new_password = request.form.get("password")
+        hashed = hash_password(new_password)
+
+        cur.execute("""
+            UPDATE users
+            SET password_hash = ?, reset_token = NULL, reset_expires = NULL
+            WHERE id = ?
+        """, (hashed, user["id"]))
+
+        conn.commit()
+        conn.close()
+
+        return redirect(url_for("main.home", reset=1))
+
+    conn.close()
+    return render_template("reset_password.html", token=token)
+
+
+   

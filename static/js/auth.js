@@ -336,14 +336,69 @@ document.addEventListener("DOMContentLoaded", () => {
     if (headerLogoutBtn) headerLogoutBtn.addEventListener("click", doLogout);
 
     // ===============================
-    // 🔑 FORGOT PASSWORD (placeholder)
+    // 🔑 FORGOT PASSWORD
     // ===============================
 
     if (forgotPasswordLink) {
         forgotPasswordLink.addEventListener("click", (e) => {
             e.preventDefault();
-            alert("Sistema de recuperación próximamente disponible.");
+
+            document.getElementById("loginForm").classList.add("hidden");
+            document.getElementById("recoverForm").classList.remove("hidden");
         });
+    }
+
+    // ===============================
+    // 🔐 RECOVER PASSWORD
+    // ===============================
+
+    const recoverForm = document.getElementById("recoverForm");
+
+    if (recoverForm) {
+        recoverForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById("recoverEmail").value.trim();
+            const messageBox = document.getElementById("recoverMessage");
+
+            if (!email) {
+                messageBox.textContent = "Introduce un email válido.";
+                return;
+            }
+
+            try {
+                const res = await fetch("/recover", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ email })
+                });
+
+                const data = await res.json();
+
+                messageBox.textContent = data.message;
+
+            } catch (err) {
+                messageBox.textContent = "Error al conectar con el servidor.";
+            }
+        });
+    }
+
+    if (urlParams.get("reset") === "1") {
+        window.openLoginModal();
+
+        setTimeout(() => {
+            const loginMessage = document.getElementById("loginMessage");
+            if (loginMessage) {
+                loginMessage.textContent = "✅ Contraseña actualizada correctamente. Ahora puedes iniciar sesión.";
+                loginMessage.classList.remove("error");
+                loginMessage.classList.add("success");
+            }
+
+            // Limpiar parámetro de la URL
+            window.history.replaceState({}, document.title, "/");
+        }, 300);
     }
 
 });

@@ -39,7 +39,9 @@ def init_db():
             total_score INTEGER DEFAULT 0,
             level_unlocked INTEGER DEFAULT 1,
             role TEXT DEFAULT 'user',
-            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            reset_token TEXT,
+            reset_expires TEXT
         );
 
         """
