@@ -906,3 +906,13 @@ def register_bingo_online_sockets(socketio):
 
         emit("new_chat_message", mensaje_data, room=codigo)
 
+    # -------------------------
+    # 💬 ENTRAR EN LOBBY GENERAL
+    # -------------------------
+    @socketio.on("join_online_lobby_general")
+    def join_online_lobby_general(data):
+        join_room("lobby_general")
+
+        # Enviar historial si existe
+        if "lobby_general" in chat_historial:
+            emit("chat_history", chat_historial["lobby_general"])

@@ -21,7 +21,9 @@ const chatMessages = document.getElementById("chatMessages");
 
 // Enviar mensaje
 function sendChatMessage() {
-    if (!currentChatRoom) return; // no permitir si no está en lobby
+    if (!currentChatRoom) {
+        currentChatRoom = "lobby_general";
+    }
 
     const message = chatInput.value.trim();
     if (!message) return;
@@ -54,6 +56,14 @@ socket.on("new_chat_message", function(data) {
 
     chatMessages.appendChild(div);
     chatMessages.scrollTop = chatMessages.scrollHeight;
+});
+
+socket.on("connect", () => {
+    socket.emit("join_online_lobby_general", {
+        nombre: window.BINGO_USER || "Invitado"
+    });
+
+    currentChatRoom = "lobby_general";
 });
 
 // =======================
