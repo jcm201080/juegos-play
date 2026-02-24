@@ -92,6 +92,25 @@
         </ul>
     </div>
 
+    <!-- 💬 CHAT SALA -->
+    <div class="bingo-chat">
+        <h3>💬 Chat de la sala</h3>
+
+        <div id="chatMessages" class="chat-messages"></div>
+
+        <div class="chat-input-container">
+            <input 
+                type="text" 
+                id="chatInput" 
+                maxlength="200"
+                placeholder="Escribe un mensaje..."
+            >
+            <button id="sendChatBtn" class="btn-primary">
+                Enviar
+            </button>
+        </div>
+    </div>
+
     <a href="{{ url_for('bingo.bingo_home') }}" class="btn-secondary">
         ⬅ Volver
     </a>

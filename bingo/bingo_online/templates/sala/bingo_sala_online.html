@@ -13,10 +13,14 @@
 <!--<div id="estado-espera">
     <div id="estado">Preparando partida...</div>
 </div>-->
+
+
 {% endblock %}
 
 {% block extra_js %}
+{% if IS_ONLINE %}
 <script type="module"
         src="{{ url_for('static', filename='js/bingo/online_sala.js') }}">
 </script>
+{% endif %}
 {% endblock %}

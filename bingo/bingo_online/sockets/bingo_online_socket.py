@@ -34,6 +34,9 @@ from bingo.logic.bingo_online_stats import (
 from config import BOT_MIN_DELAY, BOT_MAX_DELAY
 
 
+# 💬 Historial de chat en memoria
+chat_historial = {}
+
 
 #Penalizar jugador
 def validar_en_cartones(cartones, bolas, funcion_comprobar):
@@ -170,6 +173,12 @@ def start_online_countdown(socketio, lobby):
         fill_with_bots(lobby)
 
         codigo = "".join(random.choices("ABCDEFGH123456789", k=4))
+        
+        # 🔄 Transferir chat del lobby a la nueva sala
+        lobby_key = f"lobby_{lobby['max_players']}"
+        if lobby_key in chat_historial:
+            chat_historial[codigo] = chat_historial[lobby_key]
+            chat_historial.pop(lobby_key, None)
 
         salas_bingo_online[codigo] = {
             "jugadores": {},
@@ -416,6 +425,7 @@ def register_bingo_online_sockets(socketio):
         countdown = data.get("countdown")  # 👈 NUEVO
 
         lobby = get_lobby(max_players)
+        join_room(f"lobby_{max_players}")
 
         # 👑 Si es admin y envía countdown personalizado
         if (
@@ -485,6 +495,9 @@ def register_bingo_online_sockets(socketio):
 
 
         join_room(codigo)
+        # 📜 Enviar historial del chat si existe
+        if codigo in chat_historial:
+            emit("chat_history", chat_historial[codigo], room=sid)
 
         emitir_estado_a_todos(socketio, codigo, sala)
 
@@ -866,4 +879,30 @@ def register_bingo_online_sockets(socketio):
 
         # ✅ Confirmar al frontend
         emit("saliste_sala", {}, room=sid)
+
+
+    # -------------------------
+    # 💬 CHAT (Lobby + Sala)
+    # -------------------------
+    @socketio.on("chat_message")
+    def handle_chat_message(data):
+        codigo = data.get("codigo")
+        mensaje = data.get("message", "")[:200].strip()
+
+        if not mensaje or not codigo:
+            return
+
+        if codigo not in chat_historial:
+            chat_historial[codigo] = []
+
+        mensaje_data = {
+            "username": session.get("username", "Invitado"),
+            "message": mensaje
+        }
+
+        # Guardar máximo 30 mensajes
+        chat_historial[codigo].append(mensaje_data)
+        chat_historial[codigo] = chat_historial[codigo][-30:]
+
+        emit("new_chat_message", mensaje_data, room=codigo)
 

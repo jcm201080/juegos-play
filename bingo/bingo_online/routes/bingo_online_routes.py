@@ -33,7 +33,8 @@ def bingo_online_home():
 def bingo_online_sala(codigo):
     return render_template(
         "sala/bingo_sala_online.html",
-        codigo=codigo
+        codigo=codigo,
+        IS_ONLINE=True
     )
 
 

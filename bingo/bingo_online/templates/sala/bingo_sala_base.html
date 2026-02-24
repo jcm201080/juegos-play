@@ -13,7 +13,6 @@
     </a>
 </div>
 
-
 <section class="bingo-sala">
 
     <h1 class="bingo-title">
@@ -29,23 +28,18 @@
         🎟️ Jugador: <strong>{{ session.username }}</strong>
     </p>
 
-    {# 🔽 Aquí entra LOCAL u ONLINE #}
-    {% block sala_extra %}{% endblock %}    
+    {% block sala_extra %}{% endblock %}
 
     <div class="jugadores-box">
         <h3>👥 Jugadores en sala</h3>
-        <ul id="lista-jugadores"></ul>  
+        <ul id="lista-jugadores"></ul>
+    </div>
 
-
-    
     <a href="#historial" class="btn-historial">Ver historial de bolas</a>
 
     <div id="vidas-container" class="vidas"></div>
     <div id="ultimas-bolas" class="ultimas-bolas"></div>
-
-
     <div id="carton-container"></div>
-
 
     <div class="bingo-validaciones">
         <button id="btnLinea" class="btn-linea">🎯 Cantar línea</button>
@@ -53,17 +47,33 @@
         <button id="btnX" class="btn-x">❌ Cantar X</button>
         <button id="btnBingo" class="btn-bingo">🏆 Cantar bingo</button>
     </div>
-    
+    <!-- 💬 CHAT SALA -->
+    <div class="bingo-chat">
+        <h3>💬 Chat de la sala</h3>
+
+        <div id="chatMessages" class="chat-messages"></div>
+
+        <div class="chat-input-container">
+            <input 
+                type="text" 
+                id="chatInput" 
+                maxlength="200"
+                placeholder="Escribe un mensaje..."
+            >
+            <button id="sendChatBtn" class="btn-primary">
+                Enviar
+            </button>
+        </div>
+    </div>
+
     <div class="ranking-box">
         <h3>🏆 Ranking</h3>
-        <ul id="ranking-list">
-            <!-- dinámico -->
-        </ul>
+        <ul id="ranking-list"></ul>
     </div>
 
     <div class="bingo-actions">
         <a href="{{ url_for('ranking.ranking') }}" class="btn-ranking">
-        🏆 Ver Ranking
+            🏆 Ver Ranking
         </a>
     </div>
 
@@ -78,8 +88,8 @@
 
     <div id="toast" class="toast hidden"></div>
     <div id="aviso-cantar" class="aviso-cantar hidden"></div>
+
 </section>
 {% endblock %}
 
-{% block extra_js %}
-{% endblock %}
+{% block extra_js %}{% endblock %}

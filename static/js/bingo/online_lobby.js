@@ -4,6 +4,8 @@ console.log("🌐 online_lobby.js cargado");
 
 const socket = io();
 
+let currentChatRoom = null;
+
 // Elementos UI
 const startBtn = document.getElementById("startOnlineBtn");
 const playersList = document.getElementById("playersList");
@@ -12,6 +14,47 @@ const numPlayersSelect = document.getElementById("numPlayers");
 const numCartonesSelect = document.getElementById("numCartones");
 const startNowBtn = document.getElementById("startNowBtn");
 const countdownSelect = document.getElementById("countdownTime");
+
+const chatInput = document.getElementById("chatInput");
+const sendChatBtn = document.getElementById("sendChatBtn");
+const chatMessages = document.getElementById("chatMessages");
+
+// Enviar mensaje
+function sendChatMessage() {
+    if (!currentChatRoom) return; // no permitir si no está en lobby
+
+    const message = chatInput.value.trim();
+    if (!message) return;
+
+    socket.emit("chat_message", {
+        codigo: currentChatRoom,
+        message: message
+    });
+
+    chatInput.value = "";
+}
+
+sendChatBtn.addEventListener("click", sendChatMessage);
+
+chatInput.addEventListener("keypress", function(e) {
+    if (e.key === "Enter") {
+        sendChatMessage();
+    }
+});
+
+// Recibir mensaje
+socket.on("new_chat_message", function(data) {
+    const div = document.createElement("div");
+    div.classList.add("chat-message");
+
+    div.innerHTML = `
+        <span class="chat-user">${data.username}:</span>
+        <span>${data.message}</span>
+    `;
+
+    chatMessages.appendChild(div);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+});
 
 // =======================
 // 👑 Control botón admin
@@ -47,6 +90,9 @@ if (startBtn) {
 
         startBtn.disabled = true;
         startBtn.textContent = "⏳ Buscando jugadores...";
+
+        // 🔥 Definimos el chat del lobby
+        currentChatRoom = "lobby_" + maxPlayers;
 
         socket.emit("join_online_lobby", {
             nombre: window.BINGO_USER || "Invitado",

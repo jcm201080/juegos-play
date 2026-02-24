@@ -8,6 +8,13 @@ window.__ONLINE_SALA_JS_OK__ = true;
 const socket = io();
 
 // =======================
+// 💬 Chat sala
+// =======================
+const chatInput = document.getElementById("chatInput");
+const sendChatBtn = document.getElementById("sendChatBtn");
+const chatMessages = document.getElementById("chatMessages");
+
+// =======================
 // Datos básicos
 // =======================
 const codigo = window.CODIGO;
@@ -18,6 +25,7 @@ const playerName = window.BINGO_USER || "Invitado";
 // =======================
 const ballSound = new Audio("/static/sounds/bingo_ball.mp3");
 ballSound.volume = 0.4;
+
 
 let audioUnlocked = false;
 
@@ -34,6 +42,73 @@ function unlockAudio() {
 }
 
 document.addEventListener("click", unlockAudio, { once: true });
+
+// =======================
+// Funciones chat en sala   
+// =======================
+function sendChatMessage() {
+    if (!chatInput || !codigo) return;
+
+    const message = chatInput.value.trim();
+    if (!message) return;
+
+    socket.emit("chat_message", {
+        codigo: codigo,
+        message: message
+    });
+
+    chatInput.value = "";
+}
+
+if (sendChatBtn) {
+    sendChatBtn.addEventListener("click", sendChatMessage);
+}
+
+if (chatInput) {
+    chatInput.addEventListener("keypress", function(e) {
+        if (e.key === "Enter") {
+            sendChatMessage();
+        }
+    });
+}
+
+socket.on("new_chat_message", function(data) {
+    if (!chatMessages) return;
+
+    const div = document.createElement("div");
+    div.classList.add("chat-message");
+
+    div.innerHTML = `
+        <span class="chat-user">${data.username}:</span>
+        <span>${data.message}</span>
+    `;
+
+    chatMessages.appendChild(div);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+});
+
+// =======================
+// 📜 Historial al entrar
+// =======================
+socket.on("chat_history", function(messages) {
+    if (!chatMessages) return;
+
+    chatMessages.innerHTML = "";
+
+    messages.forEach((data) => {
+        const div = document.createElement("div");
+        div.classList.add("chat-message");
+
+        div.innerHTML = `
+            <span class="chat-user">${data.username}:</span>
+            <span>${data.message}</span>
+        `;
+
+        chatMessages.appendChild(div);
+    });
+
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+});
 
 // vidas
 let vidasActuales = 3;
