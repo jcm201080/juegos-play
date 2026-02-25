@@ -660,3 +660,72 @@ socket.on("ranking_update", (data) => {
         rankingList.appendChild(li);
     });
 });
+
+// Temporal: mostrar errores del servidor
+socket.on("connect", () => {
+    console.log("🟢 Conectado al namespace:", socket.nsp);
+});
+
+// =======================
+// 💬 CHAT CLASSIC
+// =======================
+
+const chatInput = document.getElementById("chatInput");
+const sendChatBtn = document.getElementById("sendChatBtn");
+const chatMessages = document.getElementById("chatMessages");
+
+// Enviar mensaje
+function enviarMensaje() {
+    if (!chatInput) return;
+
+    const mensaje = chatInput.value.trim();
+    if (!mensaje) return;
+
+    socket.emit("chat_message_classic", {
+        codigo,
+        message: mensaje
+    });
+
+    chatInput.value = "";
+}
+
+if (sendChatBtn) {
+    sendChatBtn.addEventListener("click", enviarMensaje);
+}
+
+if (chatInput) {
+    chatInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
+            enviarMensaje();
+        }
+    });
+}
+
+// Recibir mensaje nuevo
+socket.on("new_chat_message_classic", (data) => {
+    if (!chatMessages) return;
+
+    const div = document.createElement("div");
+    div.classList.add("chat-message");
+
+    div.innerHTML = `<strong>${data.username}:</strong> ${data.message}`;
+
+    chatMessages.appendChild(div);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+});
+
+// Recibir historial
+socket.on("chat_history_classic", (mensajes) => {
+    if (!chatMessages) return;
+
+    chatMessages.innerHTML = "";
+
+    mensajes.forEach((data) => {
+        const div = document.createElement("div");
+        div.classList.add("chat-message");
+        div.innerHTML = `<strong>${data.username}:</strong> ${data.message}`;
+        chatMessages.appendChild(div);
+    });
+
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+});

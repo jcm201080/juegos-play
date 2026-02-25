@@ -31,6 +31,8 @@ from bingo.logic.bingo_stats import (
     sumar_puntos_totales
 )
 
+#chat
+classic_chat_historial = {}
 # =========================
 # ESTADO EN MEMORIA
 # =========================
@@ -155,6 +157,14 @@ def register_bingo_sockets(socketio):
 
         join_room(codigo, namespace=NAMESPACE)
         emitir_estado_a_todos(sala)
+        # 📜 Enviar historial del chat si existe
+        if codigo in classic_chat_historial:
+            emit(
+                "chat_history_classic",
+                classic_chat_historial[codigo],
+                room=sid,
+                namespace=NAMESPACE
+            )
 
     # -------------------------
     # INICIAR PARTIDA
@@ -292,6 +302,7 @@ def register_bingo_sockets(socketio):
 
         if not sala["jugadores"]:
             salas_bingo.pop(codigo)
+            classic_chat_historial.pop(codigo, None)
         else:
             if sala["host"] == sid:
                 sala["host"] = next(iter(sala["jugadores"]))
@@ -487,3 +498,70 @@ def register_bingo_sockets(socketio):
                         sala["host"] = next(iter(sala["jugadores"]))
                     emitir_estado_a_todos(sala)
                 break
+
+    # -------------------------
+    # 💬 CHAT CLASSIC
+    # -------------------------
+    @socketio.on("chat_message_classic", namespace=NAMESPACE)
+    def handle_chat_message_classic(data):
+        print("CHAT RECIBIDO:", data)
+        print("SESSION:", session)
+        codigo = data.get("codigo")
+        mensaje = data.get("message", "")[:200].strip()
+
+        if not codigo or not mensaje:
+            return
+
+        if codigo not in classic_chat_historial:
+            classic_chat_historial[codigo] = []
+
+        mensaje_data = {
+            "username": session.get("username", "Invitado"),
+            "message": mensaje
+        }
+
+        classic_chat_historial[codigo].append(mensaje_data)
+        classic_chat_historial[codigo] = classic_chat_historial[codigo][-30:]
+
+        emit("new_chat_message_classic", mensaje_data, room=codigo , namespace=NAMESPACE)
+
+
+    # =========================
+    # 💬 CHAT LOBBY GLOBAL
+    # =========================
+
+    lobby_chat_historial = []
+
+    @socketio.on("join_lobby_classic", namespace=NAMESPACE)
+    def join_lobby():
+        join_room("lobby", namespace=NAMESPACE)
+
+        # Enviar historial al que entra
+        emit(
+            "lobby_chat_history",
+            lobby_chat_historial,
+            room=request.sid,
+            namespace=NAMESPACE
+        )
+
+
+    @socketio.on("lobby_chat_message", namespace=NAMESPACE)
+    def handle_lobby_chat(data):
+        mensaje = data.get("message", "")[:200].strip()
+        if not mensaje:
+            return
+
+        mensaje_data = {
+            "username": session.get("username", "Invitado"),
+            "message": mensaje
+        }
+
+        lobby_chat_historial.append(mensaje_data)
+        lobby_chat_historial[:] = lobby_chat_historial[-50:]
+
+        socketio.emit(
+            "lobby_new_message",
+            mensaje_data,
+            room="lobby",
+            namespace=NAMESPACE
+        )

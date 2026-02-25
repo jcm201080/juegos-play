@@ -22,12 +22,9 @@ def get_app_version():
 
 APP_VERSION = get_app_version()
 
-# =========================
-# 🧵 Eventlet SOLO en producción
-# =========================
-if IS_PROD:
-    import eventlet
-    eventlet.monkey_patch()
+import eventlet
+eventlet.monkey_patch()
+
 
 # =========================
 # 📦 Imports Flask
@@ -132,7 +129,7 @@ def inject_app_version():
 socketio = SocketIO(
     app,
     cors_allowed_origins="*",
-    async_mode="eventlet" if IS_PROD else "threading"
+    async_mode="eventlet"
 )
 
 # =========================

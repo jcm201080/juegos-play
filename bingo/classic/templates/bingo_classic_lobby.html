@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+
 {% block title %}Bingo Online{% endblock %}
 
 {% block extra_css %}
@@ -25,24 +26,43 @@
         <input type="text" id="codigoSala" placeholder="Código de sala">
         <button class="btn-secondary" onclick="unirseSala()">Entrar</button>
     </div>
+    <div class="bingo-chat">
+        <h3>💬 Chat global</h3>
+
+        <div id="lobbyChatMessages" class="chat-messages"></div>
+
+        <div class="chat-input-container">
+            <input 
+                type="text" 
+                id="lobbyChatInput"
+                maxlength="200"
+                placeholder="Escribe un mensaje..."
+            >
+            <button id="lobbySendBtn" class="btn-primary">
+                Enviar
+            </button>
+        </div>
+    </div>
     <a href="{{ url_for('bingo.bingo_home') }}" class="btn-secondary">
         ⬅ Volver
     </a>
 
 </section>
+{% endblock %}
 
+{% block extra_js %}
 <script>
 function guardarNombre() {
-    const nombre = document.getElementById("nombreJugador").value.trim() || "Jugador";
+    const nombre = document.getElementById("nombreJugador")?.value.trim() || "Jugador";
     localStorage.setItem("bingo_nombre", nombre);
 }
 
 function unirseSala() {
-    const codigo = document.getElementById("codigoSala").value.trim().toUpperCase();
+    const codigo = document.getElementById("codigoSala")?.value.trim().toUpperCase();
     if (!codigo) return;
 
     guardarNombre();
-    window.location.href = `/bingo/${codigo}`;
+    window.location.href = `/bingo/classic/${codigo}`;
 }
 </script>
 
