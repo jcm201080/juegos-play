@@ -96,6 +96,7 @@ def emitir_ranking(socketio, codigo, sala):
 # =====================================================
 
 def emitir_estado_a_todos(socketio, codigo, sala):
+    """Emitir el estado de todos los jugadores a la sala especificada."""
     socketio.emit(
         "lista_jugadores",
         {
@@ -110,6 +111,12 @@ def emitir_estado_a_todos(socketio, codigo, sala):
         },
         room=codigo,
     )
+
+def penalizar_jugador(jugador, puntos):
+    """Penalizar al jugador restando vidas."""
+    jugador["vidas"] -= puntos
+    if jugador["vidas"] < 0:
+        jugador["vidas"] = 0
 
 
 
@@ -400,11 +407,6 @@ def start_online_autoplay(socketio, codigo):
     socketio.start_background_task(run)
 
 
-#penalizar jugador
-def penalizar_jugador(jugador, puntos):
-    jugador["vidas"] -= puntos
-    if jugador["vidas"] < 0:
-        jugador["vidas"] = 0
 
 
 # =====================================================

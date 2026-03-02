@@ -4,7 +4,9 @@
 import os
 import json
 from dotenv import load_dotenv
+import logging  # Importar logging para manejar errores
 
+# Cargar las variables de entorno desde un archivo .env
 load_dotenv()
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -14,17 +16,21 @@ IS_PROD = os.environ.get("FLASK_ENV") == "production"
 # Version
 # =================
 def get_app_version():
+    """Obtiene la versión de la aplicación desde package.json."""
     try:
         with open(os.path.join(BASE_DIR, "package.json"), "r", encoding="utf-8") as f:
             return json.load(f).get("version", "unknown")
-    except Exception:
+    except FileNotFoundError:  # Manejar solo el error de archivo no encontrado
+        logging.error("El archivo package.json no se encontró.")
+        return "unknown"
+    except json.JSONDecodeError:  # Manejar errores de decodificación JSON
+        logging.error("Error al decodificar JSON en package.json.")
         return "unknown"
 
 APP_VERSION = get_app_version()
 
 import eventlet
-eventlet.monkey_patch()
-
+eventlet.monkey_patch()  # Habilitar monkey patch para compatibilidad con Socket.IO
 
 # =========================
 # 📦 Imports Flask
@@ -33,7 +39,6 @@ from flask import Flask, request, session
 from flask_cors import CORS
 from flask_socketio import SocketIO
 from werkzeug.middleware.proxy_fix import ProxyFix
-
 from db import init_db
 
 # =========================
@@ -55,9 +60,8 @@ from routes.chess_rooms import register_chess_rooms
 # 🎱 Bingo CLASSIC
 from bingo.classic.routes.bingo_routes import bingo_routes
 from bingo.classic.sockets.bingo_socket import register_bingo_sockets
-from bingo.routes.routes import bingo_bp# 🏆 Bingo Ranking
+from bingo.routes.routes import bingo_bp  # 🏆 Bingo Ranking
 from bingo.routes.ranking_routes import ranking_bp
-
 
 # 🎱 Bingo ONLINE
 from bingo.bingo_online.routes.bingo_online_routes import bingo_online_routes
@@ -68,59 +72,66 @@ from utils.visitas import registrar_visita
 import config
 from config_validator import validate_config
 
-validate_config(config)
+# Validar la configuración de la aplicación
+try:
+    validate_config(config)
+except ValueError as e:
+    logging.error(f"Configuration validation failed: {e}")
+    exit(1)
 
 # =========================
 # 🚀 Crear app
 # =========================
 app = Flask(__name__)
 
-# ProxyFix SOLO en producción (cuando hay Nginx)
+# Configuración de ProxyFix SOLO en producción (cuando hay Nginx)
 if IS_PROD:
     app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
 # =========================
 # 🔑 Configuración básica
 # =========================
-app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev-key")
-app.config["TEMPLATES_AUTO_RELOAD"] = not IS_PROD
-app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 0
+app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev-key")  # Clave secreta para sesiones
+app.config["TEMPLATES_AUTO_RELOAD"] = not IS_PROD  # Recargar plantillas en desarrollo
+app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 0  # Desactivar caché de archivos
 
 # =========================
 # 🍪 Cookies seguras
 # =========================
 app.config.update(
-    SESSION_COOKIE_SAMESITE="Lax",
-    SESSION_COOKIE_SECURE=IS_PROD,
+    SESSION_COOKIE_SAMESITE="Lax",  # Configuración de seguridad para cookies
+    SESSION_COOKIE_SECURE=IS_PROD,  # Cookies seguras solo en producción
 )
 
 # =========================
 # 🔑 Base de datos
 # =========================
-init_db()
+init_db()  # Inicializar la base de datos
 
 # =========================
 # 👀 Contar visitas
 # =========================
 @app.before_request
 def contar_visitas():
+    """Contar las visitas a la aplicación y registrar visitas únicas."""
     if request.path.startswith("/static"):
-        return
+        return  # Ignorar rutas estáticas
     if request.path.startswith("/api/track"):
-        return
+        return  # Ignorar seguimiento de API
     if request.path in ("/favicon.ico", "/robots.txt"):
-        return
+        return  # Ignorar favicon y robots.txt
 
-    if not session.get("visitado"):
+    if not session.get("visitado"):  # Si no se ha visitado la página
         session["visitado"] = True
         session["ruta_entrada"] = request.path
-        registrar_visita()
+        registrar_visita()  # Registrar visita
 
 # =========================
 # 📌 Version global
 # =========================
 @app.context_processor
 def inject_app_version():
+    """Inyectar la versión de la aplicación en el contexto de las plantillas."""
     return dict(APP_VERSION=APP_VERSION)
 
 # =========================
@@ -128,7 +139,7 @@ def inject_app_version():
 # =========================
 socketio = SocketIO(
     app,
-    cors_allowed_origins="*",
+    cors_allowed_origins="*",  # Considera restringir esto en producción
     async_mode="eventlet"
 )
 
@@ -143,7 +154,7 @@ register_bingo_online_sockets(socketio)
 # =========================
 # 🌍 CORS
 # =========================
-CORS(app, supports_credentials=True)
+CORS(app, supports_credentials=True)  # Habilitar CORS con soporte para credenciales
 
 # =========================
 # 🧠 Blueprints
@@ -155,13 +166,10 @@ app.register_blueprint(puzzle_bp)
 app.register_blueprint(english_games_bp)
 app.register_blueprint(oca_api)
 app.register_blueprint(chess_routes)
-
 app.register_blueprint(bingo_bp)
 app.register_blueprint(bingo_routes)
 app.register_blueprint(bingo_online_routes)
 app.register_blueprint(ranking_bp)
-
-
 app.register_blueprint(admin_bp)
 
 # =========================
@@ -173,5 +181,5 @@ if __name__ == "__main__":
         host="0.0.0.0",
         port=5000,
         debug=not IS_PROD,
-        allow_unsafe_werkzeug=True
+        allow_unsafe_werkzeug=True  # Considera eliminar esto en producción
     )
