@@ -808,3 +808,29 @@ button:disabled {
     border-radius: 8px;
     border: none;
 }
+
+
+/* =====================================================
+   Cuenta atrás para próxima bola
+   ===================================================== */
+.contador-bola{
+    font-size:14px;
+    font-weight:600;
+    opacity:0.85;
+    display:flex;
+    align-items:center;
+    gap:4px;
+}
+
+#nextBallTimer{
+    font-size:16px;
+    font-weight:bold;
+    color:#ffb347;
+}
+
+.bolas-y-timer{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:12px;
+}

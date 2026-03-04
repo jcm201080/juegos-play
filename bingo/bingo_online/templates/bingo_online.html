@@ -124,6 +124,7 @@
 <script>
     window.BINGO_USER = "{{ session.username or 'Invitado' }}";
     window.BINGO_ROLE = "{{ session.role or 'user' }}";
+    window.BOLA_INTERVAL_SECONDS = {{ session.bola_interval_seconds or 30 }};
 
 </script>
 

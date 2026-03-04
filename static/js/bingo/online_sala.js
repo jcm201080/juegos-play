@@ -72,6 +72,44 @@ if (chatInput) {
     });
 }
 
+// =======================
+// Función contador
+// =======================
+const INTERVALO_BOLA = window.BOLA_INTERVAL_SECONDS || 5;
+let ballCountdown = INTERVALO_BOLA;
+let countdownInterval = null;
+
+
+function startBallCountdown(){
+
+    clearInterval(countdownInterval);
+
+    ballCountdown = INTERVALO_BOLA;
+
+    const timer = document.getElementById("nextBallTimer");
+    if(!timer) return;
+
+    timer.textContent = ballCountdown;
+
+    countdownInterval = setInterval(()=>{
+
+        ballCountdown--;
+
+        if(ballCountdown < 0){
+            ballCountdown = 0;
+        }
+
+        timer.textContent = ballCountdown;
+
+    },1000);
+}
+
+
+
+// =======================
+// Nuevo mensaje de chat
+// =======================
+
 socket.on("new_chat_message", function(data) {
     if (!chatMessages) return;
 
@@ -299,6 +337,8 @@ socket.on("bola_cantada", (data) => {
     mostrarBola(data.bola);
     renderHistorial(data.historial);
     renderUltimasBolas(data.historial);
+
+    startBallCountdown();
 });
 
 //Iniciar Partida
@@ -308,6 +348,7 @@ socket.on("game_started", () => {
     if (estado) {
         estado.textContent = "🎉 Partida en curso";
     }
+    startBallCountdown();
 });
 
 // cantar linea / cruz / x / bingo

@@ -1,4 +1,5 @@
 import random
+import time
 
 from flask import request, session
 from flask_socketio import join_room, emit, leave_room
@@ -252,7 +253,21 @@ def start_online_countdown(socketio, lobby):
     socketio.start_background_task(run)
 
 
+# =====================================================
+# 🤖 AUTOPLAY (BOTS)
+# =====================================================
+def bot_play(socketio, codigo, nombre, delay):
+    socketio.sleep(delay)
 
+    sala = salas_bingo_online.get(codigo)
+    if not sala or not sala["en_partida"]:
+        return
+
+    jugador = sala["jugadores"].get(nombre)
+    if not jugador:
+        return
+
+    # lógica de comprobar línea/cruz/x/bingo
 
 
 # =====================================================
@@ -267,145 +282,82 @@ def start_online_autoplay(socketio, codigo):
             print("❌ Sala no encontrada en autoplay")
             return
 
+        next_ball = time.time() + BOLA_INTERVAL_SECONDS
+
         while sala["en_partida"]:
-            socketio.sleep(BOLA_INTERVAL_SECONDS)
 
-            bola = sala["bombo"].sacar_bola()
-            print("🎱 Bola:", bola)
+            now = time.time()
 
-            if bola is None:
-                sala["en_partida"] = False
-                print("🏁 Fin de partida")
-                return
+            if now >= next_ball:
 
-            # 🔔 Emitir bola a todos
-            socketio.emit(
-                "bola_cantada",
-                {
-                    "bola": bola,
-                    "historial": sala["bombo"].historial
-                },
-                room=codigo
-            )
+                bola = sala["bombo"].sacar_bola()
+                print("🎱 Bola:", bola)
 
-            bolas = sala["bombo"].historial
-
-            # 🤖 LÓGICA DE BOTS
-            for nombre, jugador in sala["jugadores"].items():
-                if not jugador.get("bot"):
-                    continue
-
-                cartones = sala["cartones"].get(nombre)
-                if not cartones:
-                    continue
-
-                carton = cartones[0]
-
-                # ⏱️ pequeño retraso humano
-                socketio.sleep(random.uniform(BOT_MIN_DELAY, BOT_MAX_DELAY))
-
-
-                # LINEA
-                if (
-                    sala["premios"]["linea"] is None
-                    and not jugador["cantado"]["linea"]
-                    and comprobar_linea(carton, bolas)
-                ):
-                    jugador["cantado"]["linea"] = True
-                    sala["premios"]["linea"] = nombre
-                    sumar_puntos(jugador, 1)
-
-                    emitir_ranking(socketio, codigo, sala)
-
-                    socketio.emit(
-                        "resultado_cantar",
-                        {
-                            "tipo": "linea",
-                            "valida": True,
-                            "jugador": nombre,
-                            "puntos": jugador["puntos"]
-                        },
-                        room=codigo
-                    )
-                    continue
-
-
-
-
-                # CRUZ
-                if (
-                    sala["premios"]["cruz"] is None
-                    and not jugador["cantado"]["cruz"]
-                    and comprobar_cruz(carton, bolas)
-                ):
-                    jugador["cantado"]["cruz"] = True
-                    sala["premios"]["cruz"] = nombre
-                    sumar_puntos(jugador, 2)
-
-                    emitir_ranking(socketio, codigo, sala)
-
-                    socketio.emit(
-                        "resultado_cantar",
-                        {
-                            "tipo": "cruz",
-                            "valida": True,
-                            "jugador": nombre,
-                            "puntos": jugador["puntos"]
-                        },
-                        room=codigo
-                    )
-                    continue
-
-
-
-                # X
-                if (
-                    sala["premios"]["x"] is None
-                    and not jugador["cantado"]["x"]
-                    and comprobar_x(carton, bolas)
-                ):
-                    jugador["cantado"]["x"] = True
-                    sala["premios"]["x"] = nombre
-                    sumar_puntos(jugador, 2)
-
-                    emitir_ranking(socketio, codigo, sala)
-
-                    socketio.emit(
-                        "resultado_cantar",
-                        {
-                            "tipo": "x",
-                            "valida": True,
-                            "jugador": nombre,
-                            "puntos": jugador["puntos"]
-                        },
-                        room=codigo
-                    )
-                    continue
-
-
-
-                # BINGO (cierra partida)
-                if comprobar_bingo(carton, bolas):
+                if bola is None:
                     sala["en_partida"] = False
-                    sumar_puntos(jugador, 5)
-
-                    emitir_ranking(socketio, codigo, sala)
-
-                    socketio.emit(
-                        "resultado_cantar",
-                        {
-                            "tipo": "bingo",
-                            "valida": True,
-                            "jugador": nombre,
-                            "puntos": jugador["puntos"]
-                        },
-                        room=codigo
-                    )
+                    print("🏁 Fin de partida")
                     return
 
+                socketio.emit(
+                    "bola_cantada",
+                    {
+                        "bola": bola,
+                        "historial": sala["bombo"].historial
+                    },
+                    room=codigo
+                )
+
+                bolas = sala["bombo"].historial
+
+                # 🤖 BOTS
+                for nombre, jugador in sala["jugadores"].items():
+
+                    if not jugador.get("bot"):
+                        continue
+
+                    cartones = sala["cartones"].get(nombre)
+                    if not cartones:
+                        continue
+
+                    carton = cartones[0]
+
+                    delay = random.uniform(BOT_MIN_DELAY, BOT_MAX_DELAY)
+
+                    socketio.start_background_task(
+                        bot_play,
+                        socketio,
+                        codigo,
+                        nombre,
+                        delay
+                    )
+
+                    if (
+                        sala["premios"]["linea"] is None
+                        and not jugador["cantado"]["linea"]
+                        and comprobar_linea(carton, bolas)
+                    ):
+                        jugador["cantado"]["linea"] = True
+                        sala["premios"]["linea"] = nombre
+                        sumar_puntos(jugador, 1)
+
+                        emitir_ranking(socketio, codigo, sala)
+
+                        socketio.emit(
+                            "resultado_cantar",
+                            {
+                                "tipo": "linea",
+                                "valida": True,
+                                "jugador": nombre,
+                                "puntos": jugador["puntos"]
+                            },
+                            room=codigo
+                        )
+
+                next_ball += BOLA_INTERVAL_SECONDS
+
+            socketio.sleep(0.05)
 
     socketio.start_background_task(run)
-
 
 
 
