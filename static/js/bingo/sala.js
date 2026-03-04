@@ -166,18 +166,25 @@ function mostrarBolasActuales(bola) {
     bolasActuales.push(bola);
     if (bolasActuales.length > 4) bolasActuales.shift();
 
-
     contenedor.innerHTML = "";
 
     bolasActuales.forEach((n, i) => {
+
         const div = document.createElement("div");
+
         div.className =
             "bola-actual-num" +
             (i === bolasActuales.length - 1 ? " latest" : "");
+
         div.textContent = n;
+
+        // ⭐ animación solo para la bola nueva
+        if (i === bolasActuales.length - 1) {
+            div.classList.add("bola-animada");
+        }
+
         contenedor.appendChild(div);
     });
-
 }
 
 
@@ -304,6 +311,27 @@ socket.on("lista_jugadores", (data) => {
     const intervalSelect = document.getElementById("intervalSelect");
     const validaciones = document.querySelector(".bingo-validaciones");
 
+    const lista = document.getElementById("lista-jugadores");
+
+    if (lista) {
+        lista.innerHTML = "";
+
+        data.jugadores?.forEach((j) => {
+            const li = document.createElement("li");
+
+            if (typeof j === "string") {
+                li.textContent = j;
+            } else {
+                li.innerHTML = `
+                    <span>${j.nombre}</span>
+                    <span class="mini-cartones">🔢 x${j.cartones ?? 1}</span>
+                `;
+            }
+
+            lista.appendChild(li);
+        });
+    }
+
     // ───────── ESTADO DE ESPERA ─────────
     if (data.en_partida) {
         estadoEspera?.remove();
@@ -408,6 +436,11 @@ socket.on("lista_jugadores", (data) => {
 // Partida iniciada
 // =======================
 socket.on("game_started", () => {
+    const codigoBox = document.getElementById("codigoSalaBox");
+    if (codigoBox) {
+        codigoBox.style.display = "none";
+    }
+
     puntos = 0;
     actualizarPuntuacion();
 
@@ -438,6 +471,36 @@ socket.on("bola_cantada", (data) => {
     setBolasCantadas(data.historial);
     mostrarBolasActuales(data.bola);
     renderHistorial(data.historial);
+});
+
+// =======================
+// Autoplay tick (actualizar cuenta atrás)
+// =======================
+socket.on("autoplay_tick", (data) => {
+
+    const auto = document.getElementById("autoCountdown");
+    const abajo = document.getElementById("nextBallTimer");
+    const bar = document.getElementById("timerBar");
+
+    if (auto) {
+        auto.style.display = "inline";
+        auto.textContent = `⏳ ${data.seconds}s`;
+    }
+
+    if (abajo) {
+        abajo.textContent = data.seconds;
+    }
+
+    if (bar) {
+
+        const intervalo =
+            parseInt(document.getElementById("intervalSelect")?.value) || 20;
+
+        const porcentaje = (data.seconds / intervalo) * 100;
+
+        bar.style.width = porcentaje + "%";
+    }
+
 });
 
 // =======================
@@ -729,3 +792,4 @@ socket.on("chat_history_classic", (mensajes) => {
 
     chatMessages.scrollTop = chatMessages.scrollHeight;
 });
+

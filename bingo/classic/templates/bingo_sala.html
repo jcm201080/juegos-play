@@ -23,13 +23,15 @@
         🎟️ Jugador: <strong>{{ session.username }}</strong>
     </p>
 
-    <p>Código de sala: <strong>{{ codigo }}</strong></p>
-
     <!-- ✅ Variable global accesible desde sala.js -->
     <script>
         window.CODIGO = "{{ codigo }}";
         window.BINGO_USER = "{{ session.username or '' }}";
     </script>
+    <div class="jugadores-box">
+        <h3>👥 Jugadores en sala</h3>
+        <ul id="lista-jugadores"></ul>
+    </div>
 
     <div id="estado-espera">
         <div id="estado">Esperando jugadores...</div>
@@ -47,13 +49,22 @@
             </select>
         </div>
 
-        <button
-            id="startGameBtn"
-            class="btn-primary"
-            style="display: none;"
-        >
-            ▶️ Iniciar partida
-        </button>
+        <div class="sala-header">
+
+            <div class="codigo-sala" id="codigoSalaBox">
+                🎫Código Sala:
+                <span id="codigoSala">{{ codigo }}</span>
+            </div>
+
+            <button
+                id="startGameBtn"
+                class="btn-primary"
+                style="display:none;"
+            >
+                ▶️ Iniciar partida
+            </button>
+
+        </div>
 
         <!-- Botón solo para el host -->
         <button id="newBallBtn" class="btn-primary" style="display:none;">
@@ -65,14 +76,11 @@
 
             <select id="intervalSelect" class="interval-select">
                 <option value="1">1 s</option>
-                <option value="5">5 s</option>
+                <option value="3">3 s</option>
+                <option value="5" selected>5 s</option>
+                <option value="7">7 s</option>
                 <option value="10">10 s</option>
                 <option value="15">15 s</option>
-                <option value="20" selected>20 s</option>
-                <option value="25">25 s</option>
-                <option value="30">30 s</option>
-                <option value="35">35 s</option>
-                <option value="40">40 s</option>
             </select>
 
             <button id="autoPlayBtn" class="btn-auto">
@@ -97,8 +105,22 @@
     <div id="ultima-bola" class="bola-actual">
         <span class="bola-label">Bolas actuales</span>
 
-        <div class="bola-actual-lista">
-            <!-- JS mete aquí hasta 4 bolas -->
+        <div class="bola-actual-row">
+
+            <div class="bola-actual-lista">
+                <!-- JS mete aquí hasta 4 bolas -->
+            </div>
+
+            <div class="contador-bola">
+
+                <div class="timer-bar-container">
+                    <div id="timerBar" class="timer-bar"></div>
+                </div>
+
+                ⏳ <span id="nextBallTimer">20</span>s
+
+            </div>
+
         </div>
     </div>
    

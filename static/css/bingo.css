@@ -391,6 +391,26 @@
     gap: 10px;
 }
 
+.bola-actual-row{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:14px;
+}
+
+.contador-bola{
+    font-size:14px;
+    font-weight:600;
+    opacity:0.9;
+    white-space:nowrap;
+}
+
+#nextBallTimer{
+    font-size:16px;
+    font-weight:bold;
+    color:#ffb347;
+}
+
 
 
 /* 🔥 Bola más reciente (derecha) */
@@ -409,6 +429,33 @@
 
     animation: pop 0.25s ease;
 }
+.timer-bar-container {
+
+    width: 120px;
+    height: 6px;
+
+    background: rgba(255,255,255,0.15);
+    border-radius: 4px;
+
+    overflow: hidden;
+
+    margin-bottom: 4px;
+}
+
+.timer-bar {
+
+    height: 100%;
+    width: 100%;
+
+    background: linear-gradient(
+        90deg,
+        #00e5ff,
+        #7c4dff
+    );
+
+    transition: width 1s linear;
+}
+
 
 
 /* =====================================================
@@ -786,4 +833,87 @@
     padding: 8px;
     border-radius: 8px;
     border: none;
+}
+
+
+
+/* =====================================================
+   SALA – CABECERA CON CÓDIGO DE SALA
+   ===================================================== */
+.sala-header{
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:20px;
+
+    margin:15px 0;
+}
+
+.codigo-sala{
+
+    font-size:22px;
+    font-weight:600;
+
+    background:rgba(255,255,255,0.05);
+    padding:8px 14px;
+    border-radius:10px;
+}
+
+.codigo-sala span{
+
+    font-size:26px;
+    font-weight:700;
+
+    color:#ffd54f;
+    letter-spacing:2px;
+}
+
+
+/* =====================================================
+   SALA – LISTA DE JUGADORES
+   ===================================================== */
+#lista-jugadores{
+
+    list-style:none;
+    padding:0;
+    margin:0;
+}
+#lista-jugadores{
+
+    display:grid;
+
+    grid-template-columns:repeat(4, auto);
+
+    gap:8px 20px;
+
+    justify-content:center;
+}
+
+
+/* =====================================================
+   ANIMACIÓN BOLA NUEVA
+   ===================================================== */
+
+.bola-animada {
+
+    animation: bolaPop 0.8s ease;
+}
+
+@keyframes bolaPop {
+
+    0%{
+        transform: scale(0.6);
+        box-shadow:0 0 0 rgba(140,120,255,0);
+    }
+
+    50%{
+        transform: scale(1.25);
+        box-shadow:0 0 18px rgba(140,120,255,0.9);
+    }
+
+    100%{
+        transform: scale(1);
+        box-shadow:0 0 6px rgba(140,120,255,0.4);
+    }
 }
