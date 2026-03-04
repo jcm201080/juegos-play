@@ -917,3 +917,27 @@
         box-shadow:0 0 6px rgba(140,120,255,0.4);
     }
 }
+
+
+/* =====================================================
+   AVISO DE JUEGO (GANADOR, LÍNEA, ETC)
+   ===================================================== */
+.game-notice{
+    margin-top:20px;
+    padding:12px 20px;
+    border-radius:10px;
+    background:linear-gradient(90deg,#5b7cff,#9a5cff);
+    color:white;
+    font-weight:bold;
+    text-align:center;
+    animation:fadeIn 0.3s ease;
+}
+
+.hidden{
+    display:none;
+}
+
+@keyframes fadeIn{
+    from{opacity:0; transform:translateY(10px);}
+    to{opacity:1; transform:translateY(0);}
+}

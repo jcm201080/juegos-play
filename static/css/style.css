@@ -482,3 +482,88 @@
 .reset-form button {
     margin-top: 10px;
 }
+
+
+/* ============================= */
+/* 🤖 Asistente IA (estilos)     */
+.ai-assistant{
+
+position:fixed;
+bottom:20px;
+right:20px;
+
+width:320px;
+height:420px;
+
+background:#1e1e1e;
+border-radius:10px;
+
+display:flex;
+flex-direction:column;
+
+box-shadow:0 0 20px rgba(0,0,0,0.5);
+
+z-index:9999;
+
+}
+
+.ai-header {
+
+padding: 10px;
+background: #333;
+font-weight: bold;
+
+display: flex;
+justify-content: space-between;
+
+}
+
+.ai-messages {
+
+flex: 1;
+padding: 10px;
+overflow-y: auto;
+
+}
+
+.ai-input-box {
+
+display: flex;
+border-top: 1px solid #444;
+
+}
+
+.ai-input-box input {
+
+flex: 1;
+padding: 8px;
+border: none;
+background: #2a2a2a;
+color: white;
+
+}
+
+.ai-input-box button {
+
+padding: 8px 12px;
+background: #4cafef;
+border: none;
+color: white;
+
+}
+
+.ai-toggle{
+position:fixed;
+bottom:20px;
+right:20px;
+width:50px;
+height:50px;
+border-radius:50%;
+background:#4cafef;
+color:white;
+font-size:22px;
+border:none;
+cursor:pointer;
+
+z-index:9000; /* menor que el chat */
+}

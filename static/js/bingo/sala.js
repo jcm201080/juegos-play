@@ -592,6 +592,13 @@ function mostrarAvisoCantar(texto, tipo = "linea") {
 }
 
 // =======================
+// AVISOS GENERALES DESDE EL SERVIDOR
+// =======================
+socket.on("game_notice",(data)=>{
+    mostrarAvisoJuego(data.mensaje);
+});
+
+// =======================
 // FEEDBACK LINEA / BINGO / CRUZ
 // =======================
 socket.on("linea_valida", (data) => {
@@ -793,3 +800,19 @@ socket.on("chat_history_classic", (mensajes) => {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 });
 
+// =======================
+// 🎉 AVISO CENTRAL GENÉRICO
+function mostrarAvisoJuego(texto){
+
+    const box = document.getElementById("gameNotice");
+
+    if(!box) return;
+
+    box.textContent = texto;
+    box.classList.remove("hidden");
+
+    setTimeout(()=>{
+        box.classList.add("hidden");
+    },4000);
+
+}

@@ -66,6 +66,13 @@ from bingo.routes.ranking_routes import ranking_bp
 # 🎱 Bingo ONLINE
 from bingo.bingo_online.routes.bingo_online_routes import bingo_online_routes
 from bingo.bingo_online.sockets.bingo_online_socket import register_bingo_online_sockets
+from bingo.classic.sockets.bingo_socket import salas_bingo
+
+# 🧠 Agente de Bingo
+import os
+from litellm import completion
+
+from ai.agente_bingo import preguntar_agente_bingo
 
 from utils.visitas import registrar_visita
 
@@ -171,6 +178,52 @@ app.register_blueprint(bingo_routes)
 app.register_blueprint(bingo_online_routes)
 app.register_blueprint(ranking_bp)
 app.register_blueprint(admin_bp)
+
+# =========================
+# 🎱 Bingo AI
+# =========================
+from bingo.classic.sockets.bingo_socket import salas_bingo as salas_bingo_classic
+from bingo.bingo_online.state import salas_bingo_online
+
+@app.route("/api/bingo-ai", methods=["POST"])
+def bingo_ai():
+
+    try:
+
+        data = request.get_json(silent=True) or {}
+
+        pregunta = data.get("mensaje", "")
+        codigo = data.get("codigo")
+
+        if not pregunta:
+            return {"respuesta": "No he recibido ninguna pregunta."}
+
+        # 🔎 Buscar la sala en classic u online
+        sala = salas_bingo_classic.get(codigo) or salas_bingo_online.get(codigo)
+
+        contexto_partida = {}
+
+        if sala:
+
+            historial = sala["bombo"].historial
+
+            contexto_partida = {
+                "jugadores": [j["nombre"] for j in sala["jugadores"].values()],
+                "ultima_bola": historial[-1] if historial else None,
+                "bolas_recientes": historial[-10:],
+                "linea_cantada": sala.get("linea_cantada") or sala.get("premios", {}).get("linea"),
+                "bingo_cantado": sala.get("bingo_cantado") or sala.get("premios", {}).get("bingo")
+            }
+
+        respuesta = preguntar_agente_bingo(pregunta, contexto_partida)
+
+        return {"respuesta": respuesta}
+
+    except Exception as e:
+
+        print("Error IA:", e)
+
+        return {"respuesta": "⚠️ Error en el servidor de IA"}
 
 # =========================
 # ▶️ Arranque local

@@ -80,6 +80,33 @@
         <!-- CONTENIDO DE CADA PÁGINA -->
         <main>{% block content %} {% endblock %}</main>
 
+        <!-- 🤖 ASISTENTE IA GLOBAL -->
+        <div id="aiAssistant" class="ai-assistant hidden">
+
+            <div class="ai-header">
+                🤖 Asistente
+                <button id="aiClose">✖</button>
+            </div>
+
+            <div id="aiMessages" class="ai-messages"></div>
+
+            <div class="ai-input-box">
+                <input
+                    id="aiInput"
+                    type="text"
+                    placeholder="Pregunta algo..."
+                >
+
+                <button id="aiSend">
+                    ➤
+                </button>
+            </div>
+
+        </div>
+        <button id="aiToggle" class="ai-toggle hidden">
+        🤖
+        </button>
+
         <!-- FOOTER GLOBAL -->
         <footer class="footer">
             <p>
@@ -231,6 +258,9 @@
 
         <!-- JS global de auth -->
         <script src="{{ url_for('static', filename='js/auth.js') }}?v={{ APP_VERSION }}"></script>
+
+        <!-- JS global de asistente IA -->
+        <script src="{{ url_for('static', filename='js/ai_assistant.js') }}"></script>
 
         {% block extra_js %}{% endblock %}
     </body>

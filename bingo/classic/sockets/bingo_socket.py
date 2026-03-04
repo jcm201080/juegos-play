@@ -103,6 +103,63 @@ def emitir_ranking(socketio, codigo, sala):
     )
 
 
+def detectar_casi_premio(socketio, codigo, sala):
+
+    bolas = set(sala["bombo"].historial)
+
+    casi_linea = 0
+    casi_bingo = 0
+
+    for sid, cartones in sala["cartones"].items():
+
+        for carton in cartones:
+
+            # comprobar línea
+            for fila in carton:
+                faltan = [n for n in fila if n not in bolas]
+
+                if len(faltan) == 1:
+                    casi_linea += 1
+                    break
+
+            # comprobar bingo
+            numeros = [n for fila in carton for n in fila]
+            faltan = [n for n in numeros if n not in bolas]
+
+            if len(faltan) == 1:
+                casi_bingo += 1
+
+    # ---------- MENSAJES ----------
+    if casi_linea > 0:
+
+        texto = (
+            "🔥 Un jugador está a 1 número de línea"
+            if casi_linea == 1
+            else f"🔥 {casi_linea} jugadores están a 1 número de línea"
+        )
+
+        socketio.emit(
+            "game_notice",
+            {"mensaje": texto},
+            room=codigo,
+            namespace=NAMESPACE
+        )
+
+    if casi_bingo > 0:
+
+        texto = (
+            "🔥 Un jugador está a 1 número de BINGO"
+            if casi_bingo == 1
+            else f"🔥 {casi_bingo} jugadores están a 1 número de BINGO"
+        )
+
+        socketio.emit(
+            "game_notice",
+            {"mensaje": texto},
+            room=codigo,
+            namespace=NAMESPACE
+        )
+
 # =========================
 # SOCKETS
 # =========================
@@ -222,6 +279,7 @@ def register_bingo_sockets(socketio):
             room=codigo,
              namespace=NAMESPACE,
         )
+        detectar_casi_premio(socketio, codigo, sala)
 
     # -------------------------
     # AUTOPLAY
@@ -267,7 +325,15 @@ def register_bingo_sockets(socketio):
                         "historial": sala["bombo"].historial,
                     },
                     room=codigo,
-                    namespace=NAMESPACE,
+                    namespace=NAMESPACE
+                )
+
+                detectar_casi_premio(socketio, codigo, sala)
+                socketio.emit(
+                    "game_notice",
+                    {"mensaje": f"🎱 Bola {bola}"},
+                    room=codigo,
+                    namespace=NAMESPACE
                 )
 
         socketio.start_background_task(loop)
@@ -337,6 +403,7 @@ def register_bingo_sockets(socketio):
 
 
                 emit("linea_valida", {"nombre": jugador["nombre"]}, room=codigo, namespace=NAMESPACE)
+                
                 emitir_estado_a_todos(sala)
                 return
 
