@@ -8,9 +8,15 @@ juegos-play/
 ├── db.py
 ├── README.md
 │
-├── ai/                        # 🧠 Asistentes y lógica de IA
-│   ├── agente_bingo.py        # Agente IA del bingo
-│   └── contexto_bingo.py      # Contexto y reglas del bingo para la IA
+ai/
+│
+├── agente_router.py        # Router de agentes IA
+├── loader_codigo.py        # Carga README y código del proyecto
+├── contexto_general.py     # Contexto global de la web
+│
+└── agentes/
+     ├── agente_bingo.py
+     └── contexto_bingo.py
 │
 ├── routes/                    # Rutas generales de la plataforma
 │   ├── auth_routes.py

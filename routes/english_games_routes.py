@@ -3,6 +3,7 @@
 from flask import Blueprint, render_template, request, jsonify, session
 from db import get_connection
 from routes.auth_routes import login_required
+from ai.agentes.agente_english import generar_nivel_english
 
 english_games_bp = Blueprint("english_games", __name__)
 
@@ -109,3 +110,29 @@ def english_colors_ranking():
         )
 
     return jsonify({"ok": True, "ranking": ranking})
+
+
+# 🔹 Generar nivel con IA
+@english_games_bp.route("/api/english/generate-level")
+def generate_english_level():
+
+    level = request.args.get("level", 6)
+
+    try:
+        level = int(level)
+    except:
+        level = 6
+
+    data = generar_nivel_english(level)
+
+    if not data:
+        return jsonify({
+            "ok": False,
+            "error": "ai_generation_failed"
+        })
+
+    return jsonify({
+        "ok": True,
+        "level": level,
+        "data": data
+    })

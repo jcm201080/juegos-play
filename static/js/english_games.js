@@ -217,6 +217,29 @@ document.addEventListener("DOMContentLoaded", () => {
         return array;
     }
 
+    //Crear con ia niveles
+    async function fetchAILevel(level) {
+
+        try {
+
+            const resp = await fetch(`/api/english/generate-level?level=${level}`);
+
+            const data = await resp.json();
+
+            if (!data.ok) {
+                throw new Error("AI level generation failed");
+            }
+
+            return data.data;
+
+        } catch (err) {
+
+            console.error("Error generando nivel IA:", err);
+            return null;
+
+        }
+    }
+
     // Construye combinaciones aleatorias de 3 colores para el nivel 5
     function buildCompositeItems(baseColors, count) {
         const results = [];
@@ -249,8 +272,26 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // === Render del tablero según nivel actual ===
-    function renderBoard() {
-        const levelCfg = COLOR_LEVELS[currentLevel];
+    async function renderBoard() {
+
+        let levelCfg = COLOR_LEVELS[currentLevel];
+
+        // 🔹 Si el nivel no existe → pedir a IA
+        if (!levelCfg) {
+
+            const aiLevel = await fetchAILevel(currentLevel);
+
+            if (!aiLevel) {
+                setMessage("No se pudo generar el nivel.", "error");
+                return;
+            }
+
+            // guardar nivel generado por IA
+            levelCfg = aiLevel;
+            COLOR_LEVELS[currentLevel] = aiLevel;
+
+        }
+
         if (!levelCfg) return;
 
         if (levelCfg.type === "simple") {

@@ -72,7 +72,7 @@ from bingo.classic.sockets.bingo_socket import salas_bingo
 import os
 from litellm import completion
 
-from ai.agente_bingo import preguntar_agente_bingo
+from ai.agentes.agente_bingo import preguntar_agente_bingo
 
 from utils.visitas import registrar_visita
 
@@ -179,6 +179,25 @@ app.register_blueprint(bingo_online_routes)
 app.register_blueprint(ranking_bp)
 app.register_blueprint(admin_bp)
 
+# =========================
+# 🧠 Agente general
+# =========================
+from ai.agente_router import preguntar_agente_general
+
+@app.route("/api/ai", methods=["POST"])
+def ai_general():
+
+    data = request.get_json(silent=True) or {}
+
+    pregunta = data.get("mensaje", "")
+    pagina = data.get("pagina", "")
+
+    if not pregunta:
+        return {"respuesta": "No he recibido ninguna pregunta."}
+
+    respuesta = preguntar_agente_general(pregunta)
+
+    return {"respuesta": respuesta}
 # =========================
 # 🎱 Bingo AI
 # =========================

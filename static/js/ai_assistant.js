@@ -1,7 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-    const isBingoPage = window.location.pathname.includes("bingo");
-
     const aiBox = document.getElementById("aiAssistant");
     const aiInput = document.getElementById("aiInput");
     const aiSend = document.getElementById("aiSend");
@@ -10,12 +8,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const aiToggle = document.getElementById("aiToggle");
 
     if (!aiBox) return;
-
-    // Mostrar solo en páginas de bingo
-    if (!isBingoPage) {
-        aiBox.style.display = "none";
-        return;
-    }
 
     // Botón cerrar
     if (aiClose) {
@@ -57,13 +49,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
             try {
 
-                const res = await fetch("/api/bingo-ai", {
+                const res = await fetch("/api/ai", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
-                        mensaje: mensaje
+                        mensaje: mensaje,
+                        pagina: window.location.pathname
                     })
                 });
 
