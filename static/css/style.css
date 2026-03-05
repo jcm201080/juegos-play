@@ -506,6 +506,9 @@ box-shadow:0 0 20px rgba(0,0,0,0.5);
 z-index:9999;
 
 }
+.ai-assistant.hidden{
+display:none;
+}
 
 .ai-header {
 
@@ -556,14 +559,30 @@ color: white;
 position:fixed;
 bottom:20px;
 right:20px;
-width:50px;
-height:50px;
+
+width:55px;
+height:55px;
+
 border-radius:50%;
 background:#4cafef;
+
 color:white;
-font-size:22px;
+font-size:24px;
+
 border:none;
 cursor:pointer;
 
-z-index:9000; /* menor que el chat */
+display:flex;
+align-items:center;
+justify-content:center;
+
+box-shadow:0 6px 16px rgba(0,0,0,0.35);
+
+transition:transform .2s ease;
+
+z-index:9000;
+}
+
+.ai-toggle:hover{
+transform:scale(1.1);
 }

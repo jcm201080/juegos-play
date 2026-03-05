@@ -3,7 +3,21 @@ from ai.agentes.contexto_english import contexto_english
 import json
 import re
 
+# ===============================
+# 🤖 Asistente del juego
+# ===============================
+def preguntar_agente_english(pregunta):
 
+    response = completion(
+        model="groq/llama-3.3-70b-versatile",
+        messages=[
+            {"role": "system", "content": contexto_english},
+            {"role": "user", "content": pregunta}
+        ],
+        max_tokens=200
+    )
+
+    return response["choices"][0]["message"]["content"]
 # ===============================
 # 🎮 Generador de niveles IA
 # ===============================
@@ -20,40 +34,49 @@ def generar_nivel_english(level):
         dificultad = "hard"
 
     prompt = f"""
-You generate levels for a drag and drop English learning game.
+You generate levels for an English learning drag-and-drop game.
 
 Level: {level}
 Difficulty: {dificultad}
 
-Game types allowed:
-
-1 simple:
-word → color
-
-Example item:
-{{"id":"red","word":"red","color":"#e74c3c"}}
-
-2 sentence_image:
-sentence → image
-
-Example item:
-{{"id":"dog_black","sentence":"This dog is black.","img":"/static/img/english/dog_black.jpeg","alt":"Black dog"}}
+Game goal:
+Players must match words or sentences with the correct color or object.
 
 Rules:
+- Generate between 5 and 6 items.
+- Vocabulary must be beginner level English.
+- Prefer colors, animals, vehicles, fruits or basic objects.
+- Avoid repeating the same colors too often.
+- Sentences must be short and simple.
+- Use different structures if possible.
 
-- 5 or 6 items
-- Beginner vocabulary
-- Keep sentences short
-- Use colors, animals or objects
-- Output ONLY JSON
-- Do not add explanations
+Game types allowed:
 
-Return JSON with this structure:
+1) simple
+Match word → color
+
+Example:
+{{"id":"red","word":"red","color":"#e74c3c"}}
+
+2) sentence_color
+Match sentence → color
+
+Example:
+{{"id":"car_red","sentence":"The car is red.","color":"#e74c3c"}}
+
+IMPORTANT:
+- Return ONLY valid JSON.
+- Do not add explanations.
+- Do not use markdown.
+
+JSON format:
 
 {{
- "type": "simple",
- "description": "Match the color with the word",
- "items": [...]
+"type": "simple",
+"description": "Match the color with the correct word",
+"items": [
+  {{}}
+]
 }}
 """
 
@@ -66,7 +89,7 @@ Return JSON with this structure:
                 {"role": "user", "content": prompt}
             ],
             max_tokens=500,
-            temperature=0.7
+            temperature=0.9
         )
 
         texto = response["choices"][0]["message"]["content"]

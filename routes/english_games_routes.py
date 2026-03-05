@@ -136,3 +136,59 @@ def generate_english_level():
         "level": level,
         "data": data
     })
+
+
+@english_games_bp.route("/api/english/next-level")
+@login_required
+def next_level():
+
+    user_id = session["user_id"]
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        "SELECT current_level FROM english_user_progress WHERE user_id = ?",
+        (user_id,)
+    )
+
+    row = cur.fetchone()
+
+    if row:
+        level = row["current_level"]
+    else:
+        level = 1
+        cur.execute(
+            "INSERT INTO english_user_progress (user_id, current_level) VALUES (?,1)",
+            (user_id,)
+        )
+        conn.commit()
+
+    conn.close()
+
+    data = generar_nivel_english(level)
+
+    return jsonify({
+        "ok": True,
+        "level": level,
+        "data": data
+    })
+
+@english_games_bp.route("/api/english/complete-level", methods=["POST"])
+@login_required
+def complete_level():
+
+    user_id = session["user_id"]
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        "UPDATE english_user_progress SET current_level = current_level + 1 WHERE user_id = ?",
+        (user_id,)
+    )
+
+    conn.commit()
+    conn.close()
+
+    return jsonify({"ok": True})

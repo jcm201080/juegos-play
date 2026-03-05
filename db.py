@@ -94,6 +94,10 @@ def init_db():
         )
         """
     )
+    cur.execute("""
+    CREATE INDEX IF NOT EXISTS idx_english_scores_user
+    ON english_color_scores(user_id)
+    """)
 
    
     # 🔹 NUEVA TABLA: visitas a la web
@@ -208,6 +212,21 @@ def init_db():
             tipo TEXT NOT NULL,
             created_at TEXT DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY(partida_id) REFERENCES bingo_online_partidas(id),
+            FOREIGN KEY(user_id) REFERENCES users(id)
+        )
+        """
+    )
+
+    # =====================================================
+    # Tablas para juego de inglés - NIVEL
+    # =====================================================
+    cur.execute(
+    """
+        CREATE TABLE IF NOT EXISTS english_user_progress (
+            user_id INTEGER PRIMARY KEY,
+            current_level INTEGER DEFAULT 1,
+            max_level INTEGER DEFAULT 1,
+            last_played TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY(user_id) REFERENCES users(id)
         )
         """

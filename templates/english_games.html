@@ -38,21 +38,14 @@
 
     <!-- Selector de nivel -->
     <section class="english-levels">
-        <label for="eg-level-select">Nivel:</label>
-        <select id="eg-level-select">
-            <option value="1">Nivel 1 — Colores básicos</option>
-            <option value="2">Nivel 2 — 15 colores</option>
-            <option value="3">Nivel 3 — Frases + imágenes (1 color)</option>
-            <option value="4">Nivel 4 — Frases + imágenes (2 colores)</option>
-            <option value="5">Nivel 5 — Combinación de colores (3 colores)</option>
-            <option value="6">Nivel 6 — IA (infinito)</option>
-            
-        </select>
+        <div class="english-level-info">
+        Nivel actual: <strong id="eg-current-level">1</strong>
+        </div>
     </section>
 
     <!-- HUD: info de partida -->
     <section class="english-hud">
-        <div class="hud-item">❤️ Vidas: <span id="eg-lives">3</span></div>
+        <div class="hud-item">⚠️ Errores: <span id="eg-errors">0</span></div>
         <div class="hud-item">⭐ Puntuación: <span id="eg-score">0</span></div>
         <div class="hud-item">📚 Nivel: <span id="eg-level">1</span></div>
         <div class="hud-item">⏱ Tiempo: <span id="eg-time">0</span>s</div>

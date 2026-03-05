@@ -10,9 +10,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const spanBestScoreGlobal = document.getElementById("currentUserBestScore");
     const spanTotalScore = document.getElementById("currentUserTotalScore");
     const spanBestScoreLevel = document.getElementById("currentUserLevelBestScore");
+    const levelText = document.getElementById("eg-current-level");
 
     // === Estado del juego ===
-    let lives = 3;
+    let errors = 0;
+    const MAX_ERRORS = 5;
     let score = 0;
     let currentLevel = 1;
     let time = 0;
@@ -37,6 +39,63 @@ document.addEventListener("DOMContentLoaded", () => {
         { id: "darkgreen", word: "dark green", color: "#145a32" },
         { id: "gold", word: "gold", color: "#ffd700" },
     ];
+
+    const WORD_SETS = {
+
+    animals: [
+    {word:"dog",emoji:"🐶"},
+    {word:"cat",emoji:"🐱"},
+    {word:"cow",emoji:"🐄"},
+    {word:"horse",emoji:"🐎"},
+    {word:"sheep",emoji:"🐑"},
+    {word:"pig",emoji:"🐖"},
+    {word:"lion",emoji:"🦁"},
+    {word:"tiger",emoji:"🐯"},
+    {word:"elephant",emoji:"🐘"},
+    {word:"monkey",emoji:"🐒"}
+    ],
+
+    food: [
+    {word:"apple",emoji:"🍎"},
+    {word:"banana",emoji:"🍌"},
+    {word:"pizza",emoji:"🍕"},
+    {word:"burger",emoji:"🍔"},
+    {word:"bread",emoji:"🍞"},
+    {word:"cheese",emoji:"🧀"},
+    {word:"egg",emoji:"🥚"},
+    {word:"carrot",emoji:"🥕"},
+    {word:"grapes",emoji:"🍇"},
+    {word:"watermelon",emoji:"🍉"}
+    ],
+
+    vehicles: [
+    {word:"car",emoji:"🚗"},
+    {word:"bus",emoji:"🚌"},
+    {word:"bike",emoji:"🚲"},
+    {word:"train",emoji:"🚆"},
+    {word:"plane",emoji:"✈️"},
+    {word:"boat",emoji:"🚤"},
+    {word:"truck",emoji:"🚚"}
+    ],
+
+    clothes: [
+    {word:"shirt",emoji:"👕"},
+    {word:"pants",emoji:"👖"},
+    {word:"dress",emoji:"👗"},
+    {word:"shoe",emoji:"👟"},
+    {word:"hat",emoji:"🧢"}
+    ],
+
+    objects: [
+    {word:"phone",emoji:"📱"},
+    {word:"computer",emoji:"💻"},
+    {word:"book",emoji:"📚"},
+    {word:"clock",emoji:"⏰"},
+    {word:"camera",emoji:"📷"},
+    {word:"key",emoji:"🔑"}
+    ]
+
+    };
 
     // === Configuración de niveles ===
     const COLOR_LEVELS = {
@@ -143,7 +202,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // === Referencias al DOM ===
-    const livesSpan = document.getElementById("eg-lives");
+    const errorsSpan = document.getElementById("eg-errors");
     const scoreSpan = document.getElementById("eg-score");
     const levelSpan = document.getElementById("eg-level");
     const timeSpan = document.getElementById("eg-time");
@@ -156,7 +215,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const messageP = document.getElementById("eg-message");
     const startBtn = document.getElementById("eg-start-btn");
-    const levelSelect = document.getElementById("eg-level-select");
 
     // Ranking
     const rankingBody = document.getElementById("eg-ranking-body");
@@ -166,6 +224,160 @@ document.addEventListener("DOMContentLoaded", () => {
     const soundWrong = new Audio("/static/sounds/wrong.wav");
     const soundWin = new Audio("/static/sounds/end.wav");
     const soundLose = new Audio("/static/sounds/lose.wav"); // opcional
+
+    const AI_LEVEL_TYPES = [
+        "colors",
+        "numbers",
+        "objects",
+        "color_objects"
+    ];
+
+    function getAILevelType(level){
+
+    if(level < 8) return "colors";
+
+    if(level < 12) return "numbers";
+
+    if(level < 20){
+    const types=["colors","numbers","animals"];
+    return types[Math.floor(Math.random()*types.length)];
+    }
+
+    if(level < 40){
+    const types=["animals","food","vehicles","colors"];
+    return types[Math.floor(Math.random()*types.length)];
+    }
+
+    const types=[
+    "colors",
+    "numbers",
+    "animals",
+    "food",
+    "vehicles",
+    "clothes",
+    "objects"
+    ];
+
+    return types[Math.floor(Math.random()*types.length)];
+
+    }
+
+    function generateWordEmojiLevel(setName){
+
+    const set = WORD_SETS[setName];
+
+    if(!set) return null;
+
+    const items = shuffleArray([...set]).slice(0,5);
+
+    return {
+    type:setName,
+    description:`Match the word with the ${setName}`,
+    items:items.map(o=>({
+    id:o.word,
+    word:o.word,
+    emoji:o.emoji
+    }))
+    };
+
+    }
+
+    function numberToEnglish(n){
+
+    const words = [
+    "zero","one","two","three","four","five","six","seven","eight","nine",
+    "ten","eleven","twelve","thirteen","fourteen","fifteen","sixteen",
+    "seventeen","eighteen","nineteen","twenty"
+    ];
+
+    if(n<=20) return words[n];
+
+    if(n<100){
+
+    const tens=["","","twenty","thirty","forty","fifty","sixty","seventy","eighty","ninety"];
+
+    const t=Math.floor(n/10);
+    const u=n%10;
+
+    return u===0 ? tens[t] : tens[t]+" "+words[u];
+
+    }
+
+    return n.toString();
+
+    }
+
+    function generateLocalLevel(type) {
+        if(WORD_SETS[type]){
+
+        return generateWordEmojiLevel(type);
+
+        }
+
+        if (type === "colors") {
+
+            const items = shuffleArray([...BASE_COLORS]).slice(0,5);
+
+            return {
+                type: "simple",
+                description: "Match the color with the word",
+                items
+            };
+
+        }
+
+        if (type === "numbers") {
+
+            const max = Math.min(currentLevel + 5, 100);
+
+            const items = [];
+
+            for (let i = 1; i <= 5; i++) {
+
+                const n = Math.floor(Math.random() * max) + 1;
+
+                items.push({
+                    id: "n" + n,
+                    word: numberToEnglish(n),
+                    value: n.toString()
+                });
+
+            }
+
+            return {
+                type: "numbers",
+                description: "Match the number with the word",
+                items
+            };
+
+        }
+
+        if (type === "objects") {
+
+            const objects = [
+                {id:"dog", word:"dog", emoji:"🐶"},
+                {id:"cat", word:"cat", emoji:"🐱"},
+                {id:"car", word:"car", emoji:"🚗"},
+                {id:"apple", word:"apple", emoji:"🍎"},
+                {id:"banana", word:"banana", emoji:"🍌"},
+                {id:"bus", word:"bus", emoji:"🚌"},
+                {id:"bike", word:"bike", emoji:"🚲"},
+                {id:"train", word:"train", emoji:"🚆"}
+            ];
+
+            const selected = shuffleArray(objects).slice(0,5);
+
+            return {
+                type: "objects",
+                description: "Match the object with the word",
+                items: selected
+            };
+
+        }
+
+        return null;
+
+    }
 
     function safePlay(audio) {
         if (!audio) return;
@@ -183,7 +395,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function updateHUD() {
-        livesSpan.textContent = lives;
+        errorsSpan.textContent = errors + " / " + MAX_ERRORS;
         scoreSpan.textContent = score;
         levelSpan.textContent = currentLevel;
         timeSpan.textContent = time;
@@ -218,12 +430,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     //Crear con ia niveles
-    async function fetchAILevel(level) {
+    async function fetchAILevel() {
 
         try {
 
-            const resp = await fetch(`/api/english/generate-level?level=${level}`);
-
+            const resp = await fetch("/api/english/next-level");
             const data = await resp.json();
 
             if (!data.ok) {
@@ -238,6 +449,75 @@ document.addEventListener("DOMContentLoaded", () => {
             return null;
 
         }
+
+    }
+
+    // Sanear nivel IA (en caso de que venga mal formado)
+    function sanitizeAILevel(level) {
+
+        if (!level || !level.items) return null;
+
+        const cleanItems = [];
+
+        for (const item of level.items) {
+
+            // simple
+            if (level.type === "simple") {
+
+                if (!item.id || !item.word || !item.color) continue;
+
+                cleanItems.push({
+                    id: item.id,
+                    word: item.word,
+                    color: item.color
+                });
+
+            }
+
+            // sentence_image
+            else if (level.type === "sentence_image") {
+
+                if (!item.id || !item.sentence || !item.img) continue;
+
+                cleanItems.push({
+                    id: item.id,
+                    sentence: item.sentence,
+                    img: item.img,
+                    alt: item.alt || "image"
+                });
+
+            }
+
+        }
+
+        level.items = cleanItems;
+
+        return level;
+
+    }
+
+    // Cargar nivel usuario
+    async function cargarNivelUsuario() {
+
+        try {
+
+            const resp = await fetch("/api/english/next-level");
+            const data = await resp.json();
+
+            if (!data.ok) throw new Error("No se pudo obtener nivel");
+
+            currentLevel = data.level;
+
+            if (levelText) {
+                levelText.textContent = currentLevel;
+            }
+
+        } catch (err) {
+
+            console.error("Error cargando nivel:", err);
+
+        }
+
     }
 
     // Construye combinaciones aleatorias de 3 colores para el nivel 5
@@ -276,19 +556,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
         let levelCfg = COLOR_LEVELS[currentLevel];
 
-        // 🔹 Si el nivel no existe → pedir a IA
+        // 🔹 Si no existe nivel local → generar con IA
         if (!levelCfg) {
 
-            const aiLevel = await fetchAILevel(currentLevel);
+            const type = getAILevelType(currentLevel);
+
+            let aiLevel = generateLocalLevel(type);
 
             if (!aiLevel) {
-                setMessage("No se pudo generar el nivel.", "error");
-                return;
+                const aiLevelRaw = await fetchAILevel();
+                aiLevel = sanitizeAILevel(aiLevelRaw);
             }
 
-            // guardar nivel generado por IA
+            if (!aiLevel) {
+                setMessage("Nivel IA inválido. Generando otro...", "error");
+                return renderBoard();
+            }
+
             levelCfg = aiLevel;
-            COLOR_LEVELS[currentLevel] = aiLevel;
 
         }
 
@@ -300,6 +585,8 @@ document.addEventListener("DOMContentLoaded", () => {
             targetsTitle.textContent = "Imágenes";
         } else if (levelCfg.type === "composite") {
             targetsTitle.textContent = "Colores combinados";
+        } else if (WORD_SETS[levelCfg.type]) {
+            targetsTitle.textContent = levelCfg.type;
         }
 
         descriptionP.textContent = levelCfg.description;
@@ -315,6 +602,83 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         remainingPairs = items.length;
+
+        // =========================
+        // NUMBERS
+        // =========================
+        if (levelCfg.type === "numbers") {
+
+            targetsTitle.textContent = "Numbers";
+
+            items.forEach((item) => {
+
+                const wordEl = document.createElement("div");
+                wordEl.classList.add("eg-word");
+                wordEl.textContent = item.word;
+                wordEl.draggable = true;
+                wordEl.dataset.targetId = item.id;
+                wordEl.addEventListener("dragstart", onDragStart);
+
+                wordsContainer.appendChild(wordEl);
+
+            });
+
+            const targets = shuffleArray([...items]);
+
+            targets.forEach((item) => {
+
+                const targetEl = document.createElement("div");
+                targetEl.classList.add("eg-target");
+                targetEl.dataset.id = item.id;
+                targetEl.textContent = item.value;
+
+                targetEl.addEventListener("dragover", onDragOver);
+                targetEl.addEventListener("drop", onDrop);
+
+                targetsContainer.appendChild(targetEl);
+
+            });
+
+            return;
+        }
+
+        // Objetos
+        if (levelCfg.type === "objects" || WORD_SETS[levelCfg.type]) {
+
+            targetsTitle.textContent = "Objects";
+
+            items.forEach((item) => {
+
+                const wordEl = document.createElement("div");
+                wordEl.classList.add("eg-word");
+                wordEl.textContent = item.word;
+                wordEl.draggable = true;
+                wordEl.dataset.targetId = item.id;
+                wordEl.addEventListener("dragstart", onDragStart);
+
+                wordsContainer.appendChild(wordEl);
+
+            });
+
+            const targets = shuffleArray([...items]);
+
+            targets.forEach((item) => {
+
+                const targetEl = document.createElement("div");
+                targetEl.classList.add("eg-target");
+                targetEl.dataset.id = item.id;
+                targetEl.textContent = item.emoji;
+
+                targetEl.addEventListener("dragover", onDragOver);
+                targetEl.addEventListener("drop", onDrop);
+
+                targetsContainer.appendChild(targetEl);
+
+            });
+
+            return;
+        }
+
 
         if (levelCfg.type === "simple") {
             // Palabras (izquierda)
@@ -453,36 +817,82 @@ document.addEventListener("DOMContentLoaded", () => {
             updateHUD();
 
             if (remainingPairs === 0) {
+
                 safePlay(soundWin);
                 stopTimer();
+
                 setMessage(
-                    "🎉 ¡Nivel completado! Puedes cambiar de nivel o repetir para practicar más.",
+                    "🎉 ¡Nivel completado! Cargando siguiente nivel...",
                     "success"
                 );
 
-                // 🔹 Si hay usuario logueado, guardamos puntuación
+                // guardar puntuación
                 if (window.JCM_USER && window.JCM_USER.id) {
                     saveEnglishColorsScore().catch((err) =>
                         console.error("Error guardando puntuación:", err)
                     );
                 }
+
+                // subir nivel en backend
+                async function avanzarNivel() {
+
+                    try {
+
+                        await fetch("/api/english/complete-level", {
+                            method: "POST"
+                        });
+
+                    } catch (err) {
+                        console.error("Error avanzando nivel:", err);
+                    }
+
+                }
+
+                // cargar siguiente nivel
+                setTimeout(async () => {
+
+                    await avanzarNivel();
+
+                    await cargarNivelUsuario();
+
+                    errors = 0;
+                    score = 0;
+                    time = 0;
+                    updateHUD();
+
+                    await renderBoard();
+
+                    startTimer();
+
+                }, 1500);
             }
         } else {
             // ❌ Error
             safePlay(soundWrong);
-            lives--;
-            if (lives < 0) lives = 0;
+            errors++;
             updateHUD();
             setMessage("Ups... respuesta incorrecta.", "error");
 
-            if (lives === 0) {
-                safePlay(soundLose);
+            if (errors >= MAX_ERRORS) {
                 stopTimer();
+
                 setMessage(
-                    "😢 Te has quedado sin vidas. Pulsa “Empezar nivel” para intentarlo de nuevo.",
+                    "❌ Demasiados errores. Repites el nivel.",
                     "error"
                 );
-                document.querySelectorAll(".eg-word").forEach((el) => (el.draggable = false));
+
+                setTimeout(async () => {
+
+                    errors = 0;
+                    score = 0;
+
+                    updateHUD();
+
+                    await renderBoard();
+
+                    startTimer();
+
+                }, 2000);
             }
         }
     }
@@ -614,24 +1024,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // === Cambio de nivel ===
-    levelSelect.addEventListener("change", () => {
-        currentLevel = parseInt(levelSelect.value, 10) || 1;
-        lives = 3;
-        score = 0;
-        time = 0;
-        stopTimer();
-        updateHUD();
-        renderBoard();
-        setMessage(
-            `Has cambiado al nivel ${currentLevel}. Pulsa "Empezar nivel" para jugar.`,
-            "info"
-        );
-    });
-
     // === Botón Empezar ===
     startBtn.addEventListener("click", () => {
-        lives = 3;
+        errors = 0;
         score = 0;
         time = 0;
         updateHUD();
@@ -641,8 +1036,15 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // === Inicialización ===
-    updateHUD();
-    setMessage('Selecciona un nivel y pulsa "Empezar nivel" para jugar.', "info");
+    (async () => {
+
+        await cargarNivelUsuario();
+
+        updateHUD();
+
+        setMessage('Pulsa "Empezar nivel" para comenzar.', "info");
+
+    })();
 
     // Sincronizar usuario y cargar ranking al entrar
     syncUserFromAuth();

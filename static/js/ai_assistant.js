@@ -9,27 +9,29 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!aiBox) return;
 
+    // 👋 Mensaje inicial del asistente
+    if (aiMessages) {
+        aiMessages.innerHTML = `
+            <div class="ai-bot">
+                👋 Hola. Puedo ayudarte con las reglas del juego o resolver dudas.
+            </div>
+        `;
+    }
+
     // Botón cerrar
     if (aiClose) {
         aiClose.onclick = () => {
-            aiBox.style.display = "none";
+            aiBox.classList.add("hidden");
         };
     }
 
-    // Botón toggle
+    // Botón toggle (abrir / cerrar chat)
     if (aiToggle) {
 
-        aiToggle.style.display = "block";
-
         aiToggle.onclick = () => {
-
-            if (aiBox.style.display === "none") {
-                aiBox.style.display = "flex";
-            } else {
-                aiBox.style.display = "none";
-            }
-
+            aiBox.classList.toggle("hidden");
         };
+
     }
 
     // Enviar mensaje
@@ -38,7 +40,6 @@ document.addEventListener("DOMContentLoaded", () => {
         aiSend.onclick = async () => {
 
             const mensaje = aiInput.value.trim();
-
             if (!mensaje) return;
 
             aiMessages.innerHTML += `

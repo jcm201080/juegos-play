@@ -49,9 +49,12 @@ def preguntar_agente_general(pregunta, pagina=""):
             print("🧠 Router IA: bingo (por página)")
             return preguntar_agente_bingo(pregunta)
 
+        if "english" in pagina_lower:
+            print("🧠 Router IA: english (por página)")
+            return preguntar_agente_english(pregunta)
+
         if "chess" in pagina_lower:
             print("🧠 Router IA: chess (por página)")
-            # aquí cuando tengas agente_chess
             # return preguntar_agente_chess(pregunta)
 
         if "puzzle" in pagina_lower:
