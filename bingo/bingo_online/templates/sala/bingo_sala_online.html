@@ -20,7 +20,7 @@
 {% block extra_js %}
 {% if IS_ONLINE %}
 <script type="module"
-        src="{{ url_for('static', filename='js/bingo/online_sala.js') }}">
+        src="{{ url_for('static', filename='js/bingo/online_sala.js') }}?v={{ APP_VERSION }} ">
 </script>
 {% endif %}
 {% endblock %}
