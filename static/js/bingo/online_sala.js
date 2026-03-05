@@ -87,9 +87,22 @@ function startBallCountdown(){
     ballCountdown = INTERVALO_BOLA;
 
     const timer = document.getElementById("nextBallTimer");
+    const timerBar = document.getElementById("timerBar");
+
     if(!timer) return;
 
     timer.textContent = ballCountdown;
+
+    // reset barra
+    if(timerBar){
+        timerBar.style.transition = "none";
+        timerBar.style.width = "100%";
+
+        setTimeout(()=>{
+            timerBar.style.transition = `width ${INTERVALO_BOLA}s linear`;
+            timerBar.style.width = "0%";
+        },50);
+    }
 
     countdownInterval = setInterval(()=>{
 
@@ -103,7 +116,6 @@ function startBallCountdown(){
 
     },1000);
 }
-
 
 
 // =======================
