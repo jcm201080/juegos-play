@@ -7,9 +7,6 @@ echo "📥 Actualizando código..."
 git fetch origin
 git reset --hard origin/master
 
-echo "🔄 Actualizando versión cache..."
-npm version patch --no-git-tag-version
-
 export PYTHONPATH=/var/www/juegos
 
 echo "🔍 Comprobando config..."
