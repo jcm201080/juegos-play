@@ -1,10 +1,12 @@
 #!/bin/bash
 set -e
 
-# Ir al root del proyecto
 cd /var/www/juegos
 
-# Asegurar que Python ve el proyecto
+echo "📥 Actualizando código..."
+git fetch origin
+git reset --hard origin/master
+
 export PYTHONPATH=/var/www/juegos
 
 echo "🔍 Comprobando config..."
