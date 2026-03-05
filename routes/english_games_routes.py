@@ -192,3 +192,64 @@ def complete_level():
     conn.close()
 
     return jsonify({"ok": True})
+
+
+# routes/english_games_routes.py
+
+@english_games_bp.route("/api/english/generate-image", methods=["POST"])
+@login_required
+def generate_image():
+    """
+    Endpoint para generar imágenes bajo demanda
+    """
+    data = request.get_json(silent=True) or {}
+    prompt = data.get("prompt")
+    estilo = data.get("estilo", "cartoon")
+    
+    if not prompt:
+        return jsonify({"ok": False, "error": "prompt_required"}), 400
+    
+    # Importar la función del agente
+    from ai.agentes.agente_english import generar_o_obtener_imagen
+    
+    image_url = generar_o_obtener_imagen(prompt, estilo)
+    
+    if image_url:
+        return jsonify({
+            "ok": True,
+            "image_url": image_url
+        })
+    else:
+        return jsonify({
+            "ok": False,
+            "error": "image_generation_failed"
+        }), 500
+
+
+@english_games_bp.route("/api/english/user-stats")
+@login_required
+def user_stats():
+    """
+    Obtener estadísticas del usuario para personalizar dificultad
+    """
+    user_id = session["user_id"]
+    
+    conn = get_connection()
+    cur = conn.cursor()
+    
+    # Tiempo medio por nivel
+    cur.execute("""
+        SELECT AVG(duration_sec) as avg_time, 
+               AVG(score) as avg_score,
+               COUNT(*) as games_played
+        FROM english_color_scores 
+        WHERE user_id = ?
+    """, (user_id,))
+    
+    stats = dict(cur.fetchone() or {})
+    conn.close()
+    
+    return jsonify({
+        "ok": True,
+        "stats": stats
+    })

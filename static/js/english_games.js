@@ -551,6 +551,136 @@ document.addEventListener("DOMContentLoaded", () => {
         return results;
     }
 
+    // Funciones auxiliares para renderizado (ponlas antes de renderBoard)
+
+    function renderStroopLevel(levelCfg) {
+        targetsTitle.textContent = "Colores";
+        descriptionP.textContent = levelCfg.description;
+        
+        levelCfg.items.forEach(item => {
+            const wordEl = document.createElement("div");
+            wordEl.classList.add("eg-word", "eg-word-stroop");
+            wordEl.textContent = item.word;
+            wordEl.style.color = item.display_color;
+            wordEl.draggable = true;
+            wordEl.dataset.targetId = item.correct_color_id;
+            wordEl.addEventListener("dragstart", onDragStart);
+            wordsContainer.appendChild(wordEl);
+        });
+        
+        levelCfg.color_targets.forEach(color => {
+            const targetEl = document.createElement("div");
+            targetEl.classList.add("eg-target", "eg-target-color");
+            targetEl.dataset.id = color.id;
+            targetEl.style.backgroundColor = color.color;
+            targetEl.addEventListener("dragover", onDragOver);
+            targetEl.addEventListener("drop", onDrop);
+            targetsContainer.appendChild(targetEl);
+        });
+        
+        remainingPairs = levelCfg.items.length;
+    }
+
+    function renderCompoundSceneLevel(levelCfg) {
+        targetsTitle.textContent = "Escenas";
+        descriptionP.textContent = levelCfg.description;
+        
+        const scenes = levelCfg.items.filter(item => item.type === "scene_target");
+        const questions = levelCfg.items.filter(item => item.type === "question_item");
+        
+        questions.forEach(item => {
+            const wordEl = document.createElement("div");
+            wordEl.classList.add("eg-word");
+            wordEl.textContent = item.sentence;
+            wordEl.draggable = true;
+            wordEl.dataset.targetId = item.target_scene;
+            wordEl.addEventListener("dragstart", onDragStart);
+            wordsContainer.appendChild(wordEl);
+        });
+        
+        scenes.forEach(scene => {
+            const targetEl = document.createElement("div");
+            targetEl.classList.add("eg-target", "eg-target-image");
+            targetEl.dataset.id = scene.id;
+            
+            const img = document.createElement("img");
+            img.src = scene.img;
+            img.alt = scene.alt;
+            targetEl.appendChild(img);
+            
+            targetEl.addEventListener("dragover", onDragOver);
+            targetEl.addEventListener("drop", onDrop);
+            targetsContainer.appendChild(targetEl);
+        });
+        
+        remainingPairs = questions.length;
+    }
+
+    function renderSentenceImageLevel(levelCfg) {
+        targetsTitle.textContent = "Imágenes";
+        descriptionP.textContent = levelCfg.description;
+        
+        const items = shuffleArray([...levelCfg.items]);
+        remainingPairs = items.length;
+        
+        items.forEach((item) => {
+            const wordEl = document.createElement("div");
+            wordEl.classList.add("eg-word");
+            wordEl.textContent = item.sentence;
+            wordEl.draggable = true;
+            wordEl.dataset.targetId = item.id;
+            wordEl.addEventListener("dragstart", onDragStart);
+            wordsContainer.appendChild(wordEl);
+        });
+
+        const targets = shuffleArray([...items]);
+        targets.forEach((item) => {
+            const targetEl = document.createElement("div");
+            targetEl.classList.add("eg-target", "eg-target-image");
+            targetEl.dataset.id = item.id;
+
+            const img = document.createElement("img");
+            img.src = item.img;
+            img.alt = item.alt || "Image";
+            targetEl.appendChild(img);
+
+            targetEl.addEventListener("dragover", onDragOver);
+            targetEl.addEventListener("drop", onDrop);
+            targetsContainer.appendChild(targetEl);
+        });
+    }
+
+    function renderDefaultLevel(levelCfg) {
+        if (levelCfg.type === "simple") {
+            targetsTitle.textContent = "Colores";
+            descriptionP.textContent = levelCfg.description;
+            
+            const items = shuffleArray([...levelCfg.items]);
+            remainingPairs = items.length;
+            
+            items.forEach((item) => {
+                const wordEl = document.createElement("div");
+                wordEl.classList.add("eg-word");
+                wordEl.textContent = item.word;
+                wordEl.draggable = true;
+                wordEl.dataset.targetId = item.id;
+                wordEl.addEventListener("dragstart", onDragStart);
+                wordsContainer.appendChild(wordEl);
+            });
+
+            const targets = shuffleArray([...items]);
+            targets.forEach((item) => {
+                const targetEl = document.createElement("div");
+                targetEl.classList.add("eg-target", "eg-target-color");
+                targetEl.dataset.id = item.id;
+                targetEl.style.backgroundColor = item.color;
+                targetEl.addEventListener("dragover", onDragOver);
+                targetEl.addEventListener("drop", onDrop);
+                targetsContainer.appendChild(targetEl);
+            });
+        }
+    }
+
     // === Render del tablero según nivel actual ===
     async function renderBoard() {
 
@@ -579,6 +709,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (!levelCfg) return;
 
+        // Limpiar contenedores
+        wordsContainer.innerHTML = "";
+        targetsContainer.innerHTML = "";
+        
+        // Manejar diferentes tipos de nivel
+        if (levelCfg.type === "stroop") {
+            renderStroopLevel(levelCfg);
+            return;
+        }
+        
+        if (levelCfg.type === "compound_scene") {
+            renderCompoundSceneLevel(levelCfg);
+            return;
+        }
+        
         if (levelCfg.type === "simple") {
             targetsTitle.textContent = "Colores";
         } else if (levelCfg.type === "sentence_image") {
@@ -1024,13 +1169,177 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    // static/js/english_games.js - Añadir estas funciones
+
+    // Función para generar imagen bajo demanda
+    async function generateImageForPrompt(prompt) {
+        try {
+            const resp = await fetch("/api/english/generate-image", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ prompt: prompt })
+            });
+            
+            const data = await resp.json();
+            if (data.ok) {
+                return data.image_url;
+            }
+        } catch (err) {
+            console.error("Error generando imagen:", err);
+        }
+        return null;
+    }
+
+    
+    function renderStroopLevel(levelCfg) {
+        targetsTitle.textContent = "Colores";
+        descriptionP.textContent = levelCfg.description;
+        
+        // Render palabras con colores especiales
+        levelCfg.items.forEach(item => {
+            const wordEl = document.createElement("div");
+            wordEl.classList.add("eg-word", "eg-word-stroop");
+            wordEl.textContent = item.word;
+            wordEl.style.color = item.display_color;
+            wordEl.draggable = true;
+            wordEl.dataset.targetId = item.correct_color_id; // ¡Importante!
+            wordEl.addEventListener("dragstart", onDragStart);
+            wordsContainer.appendChild(wordEl);
+        });
+        
+        // Render targets de color
+        levelCfg.color_targets.forEach(color => {
+            const targetEl = document.createElement("div");
+            targetEl.classList.add("eg-target", "eg-target-color");
+            targetEl.dataset.id = color.id;
+            targetEl.style.backgroundColor = color.color;
+            targetEl.addEventListener("dragover", onDragOver);
+            targetEl.addEventListener("drop", onDrop);
+            targetsContainer.appendChild(targetEl);
+        });
+    }
+
+    function renderCompoundSceneLevel(levelCfg) {
+        targetsTitle.textContent = "Escenas";
+        descriptionP.textContent = levelCfg.description;
+        
+        // Separar preguntas y escenas
+        const scenes = levelCfg.items.filter(item => item.type === "scene_target");
+        const questions = levelCfg.items.filter(item => item.type === "question_item");
+        
+        // Render preguntas (arrastrables)
+        questions.forEach(item => {
+            const wordEl = document.createElement("div");
+            wordEl.classList.add("eg-word");
+            wordEl.textContent = item.sentence;
+            wordEl.draggable = true;
+            wordEl.dataset.targetId = item.target_scene;
+            wordEl.addEventListener("dragstart", onDragStart);
+            wordsContainer.appendChild(wordEl);
+        });
+        
+        // Render escenas (targets)
+        scenes.forEach(scene => {
+            const targetEl = document.createElement("div");
+            targetEl.classList.add("eg-target", "eg-target-image");
+            targetEl.dataset.id = scene.id;
+            
+            const img = document.createElement("img");
+            img.src = scene.img;
+            img.alt = scene.alt;
+            targetEl.appendChild(img);
+            
+            targetEl.addEventListener("dragover", onDragOver);
+            targetEl.addEventListener("drop", onDrop);
+            targetsContainer.appendChild(targetEl);
+        });
+    }
+
+
+    // Añadir después de renderCompoundSceneLevel
+
+    function renderSentenceImageLevel(levelCfg) {
+        targetsTitle.textContent = "Imágenes";
+        descriptionP.textContent = levelCfg.description;
+        
+        // Usar el código existente de sentence_image
+        const items = shuffleArray([...levelCfg.items]);
+        remainingPairs = items.length;
+        
+        // Frases (izquierda)
+        items.forEach((item) => {
+            const wordEl = document.createElement("div");
+            wordEl.classList.add("eg-word");
+            wordEl.textContent = item.sentence;
+            wordEl.draggable = true;
+            wordEl.dataset.targetId = item.id;
+            wordEl.addEventListener("dragstart", onDragStart);
+            wordsContainer.appendChild(wordEl);
+        });
+
+        // Imágenes (derecha)
+        const targets = shuffleArray([...items]);
+        targets.forEach((item) => {
+            const targetEl = document.createElement("div");
+            targetEl.classList.add("eg-target", "eg-target-image");
+            targetEl.dataset.id = item.id;
+
+            const img = document.createElement("img");
+            img.src = item.img;
+            img.alt = item.alt || "Image";
+            targetEl.appendChild(img);
+
+            targetEl.addEventListener("dragover", onDragOver);
+            targetEl.addEventListener("drop", onDrop);
+            targetsContainer.appendChild(targetEl);
+        });
+    }
+
+    function renderDefaultLevel(levelCfg) {
+        // Tu código existente para otros tipos
+        if (levelCfg.type === "simple") {
+            targetsTitle.textContent = "Colores";
+            descriptionP.textContent = levelCfg.description;
+            
+            const items = shuffleArray([...levelCfg.items]);
+            remainingPairs = items.length;
+            
+            // Palabras
+            items.forEach((item) => {
+                const wordEl = document.createElement("div");
+                wordEl.classList.add("eg-word");
+                wordEl.textContent = item.word;
+                wordEl.draggable = true;
+                wordEl.dataset.targetId = item.id;
+                wordEl.addEventListener("dragstart", onDragStart);
+                wordsContainer.appendChild(wordEl);
+            });
+
+            // Targets de color
+            const targets = shuffleArray([...items]);
+            targets.forEach((item) => {
+                const targetEl = document.createElement("div");
+                targetEl.classList.add("eg-target", "eg-target-color");
+                targetEl.dataset.id = item.id;
+                targetEl.style.backgroundColor = item.color;
+                targetEl.addEventListener("dragover", onDragOver);
+                targetEl.addEventListener("drop", onDrop);
+                targetsContainer.appendChild(targetEl);
+            });
+        }
+    }
     // === Botón Empezar ===
     startBtn.addEventListener("click", () => {
         errors = 0;
         score = 0;
         time = 0;
         updateHUD();
-        renderBoard();
+        
+        // 🟢 Solo renderizar si el tablero está vacío
+        if (wordsContainer.children.length === 0) {
+            renderBoard();
+        }
+        
         startTimer();
         setMessage("¡Empieza! Arrastra cada palabra / frase hasta su pareja correcta.", "info");
     });
@@ -1039,6 +1348,8 @@ document.addEventListener("DOMContentLoaded", () => {
     (async () => {
 
         await cargarNivelUsuario();
+        // 🟢 Renderizar el tablero con el nivel actual
+        await renderBoard();  // <-- AÑADE ESTA LÍNEA
 
         updateHUD();
 
