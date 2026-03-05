@@ -75,7 +75,7 @@ if (chatInput) {
 // =======================
 // Función contador
 // =======================
-const INTERVALO_BOLA = window.BOLA_INTERVAL_SECONDS || 5;
+const INTERVALO_BOLA = window.BOLA_INTERVAL_SECONDS || 7;
 let ballCountdown = INTERVALO_BOLA;
 let countdownInterval = null;
 
