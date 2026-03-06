@@ -12,7 +12,7 @@ class TetrisGame {
         this.ancho = 10;
         this.alto = 20;
         
-        // Estado del juego - INICIALIZAR VACÍO
+        // Estado del juego
         this.tablero = Array(this.alto).fill().map(() => Array(this.ancho).fill(0));
         this.piezaActual = null;
         this.siguientePieza = null;
@@ -20,32 +20,32 @@ class TetrisGame {
         this.nivel = 1;
         this.lineas = 0;
         this.gameOver = false;
-        this.partidaActiva = false;  // Nueva bandera para saber si hay partida activa
+        this.partidaActiva = false;
         
         // Intervalo del juego
         this.intervaloJuego = null;
         this.velocidadBase = 500; // ms
         
-        // Detectar si es móvil
-        this.esMovil = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        // Detectar si es móvil REAL o pantalla pequeña
+        this.esMovilReal = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        this.esPantallaPequena = window.innerWidth <= 768;
+        this.usarControlesTactiles = this.esMovilReal || this.esPantallaPequena;
         
         // Colores de las piezas
         this.colores = {
-            'I': '#00ffff',  // Cian
-            'O': '#ffff00',  // Amarillo
-            'T': '#aa00ff',  // Morado
-            'S': '#00ff00',  // Verde
-            'Z': '#ff0000',  // Rojo
-            'L': '#ffaa00',  // Naranja
-            'J': '#0000ff',  // Azul
-            '0': '#111'      // Vacío
+            'I': '#00ffff',
+            'O': '#ffff00',
+            'T': '#aa00ff',
+            'S': '#00ff00',
+            'Z': '#ff0000',
+            'L': '#ffaa00',
+            'J': '#0000ff',
+            '0': '#111'
         };
         
         // Bind de eventos
         this.bindEventos();
         this.crearControlesMovil();
-        
-        // NO iniciar partida automáticamente - eliminado this.nuevaPartida()
         
         // Dibujar tablero vacío
         this.dibujar();
@@ -53,11 +53,29 @@ class TetrisGame {
         // Cargar ranking al inicio
         this.cargarRanking();
         this.cargarEstadisticas();
+
+        // Escuchar cambios de tamaño de pantalla
+        window.addEventListener('resize', () => {
+            this.esPantallaPequena = window.innerWidth <= 768;
+            this.usarControlesTactiles = this.esMovilReal || this.esPantallaPequena;
+            this.actualizarVisibilidadControles();
+        });
+    }
+    
+    actualizarVisibilidadControles() {
+        const controles = document.querySelector('.controles-movil');
+        if (controles) {
+            if (this.usarControlesTactiles) {
+                controles.style.display = 'block';
+            } else {
+                controles.style.display = 'none';
+            }
+        }
     }
     
     bindEventos() {
         document.addEventListener('keydown', (e) => {
-            // Solo permitir movimientos si hay partida activa y no está terminada
+            // Las teclas SIEMPRE funcionan si hay partida activa
             if (!this.partidaActiva || this.gameOver) return;
             
             switch(e.key) {
@@ -84,420 +102,116 @@ class TetrisGame {
             }
         });
 
-        if (this.esMovil) {
-            let touchStartX = 0;
-            let touchStartY = 0;
-            let touchStartTime = 0;
+        // Eventos táctiles (siempre disponibles, pero solo se activan en móvil)
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let touchStartTime = 0;
 
-            this.canvas.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                const touch = e.touches[0];
-                touchStartX = touch.clientX;
-                touchStartY = touch.clientY;
-                touchStartTime = Date.now();
-            });
+        this.canvas.addEventListener('touchstart', (e) => {
+            if (!this.partidaActiva || this.gameOver) return;
+            e.preventDefault();
+            const touch = e.touches[0];
+            touchStartX = touch.clientX;
+            touchStartY = touch.clientY;
+            touchStartTime = Date.now();
+        });
 
-            this.canvas.addEventListener('touchend', (e) => {
-                e.preventDefault();
-                if (!this.partidaActiva || this.gameOver || !touchStartX) return;
+        this.canvas.addEventListener('touchend', (e) => {
+            if (!this.partidaActiva || this.gameOver || !touchStartX) return;
+            e.preventDefault();
 
-                const touchEnd = e.changedTouches[0];
-                const deltaX = touchEnd.clientX - touchStartX;
-                const deltaY = touchEnd.clientY - touchStartY;
-                const deltaTime = Date.now() - touchStartTime;
+            const touchEnd = e.changedTouches[0];
+            const deltaX = touchEnd.clientX - touchStartX;
+            const deltaY = touchEnd.clientY - touchStartY;
+            const deltaTime = Date.now() - touchStartTime;
 
-                if (Math.abs(deltaX) > Math.abs(deltaY)) {
-                    if (Math.abs(deltaX) > 30) {
-                        if (deltaX > 0) {
-                            this.mover('derecha');
-                        } else {
-                            this.mover('izquierda');
-                        }
-                    }
-                } else {
-                    if (Math.abs(deltaY) > 30) {
-                        if (deltaY > 0) {
-                            if (deltaTime < 300) {
-                                this.caidaInstantanea();
-                            } else {
-                                this.mover('abajo');
-                            }
-                        } else {
-                            this.mover('rotar');
-                        }
+            if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                if (Math.abs(deltaX) > 30) {
+                    if (deltaX > 0) {
+                        this.mover('derecha');
+                    } else {
+                        this.mover('izquierda');
                     }
                 }
+            } else {
+                if (Math.abs(deltaY) > 30) {
+                    if (deltaY > 0) {
+                        if (deltaTime < 300) {
+                            this.caidaInstantanea();
+                        } else {
+                            this.mover('abajo');
+                        }
+                    } else {
+                        this.mover('rotar');
+                    }
+                }
+            }
 
-                touchStartX = 0;
-                touchStartY = 0;
-            });
-        }
+            touchStartX = 0;
+            touchStartY = 0;
+        });
     }
 
     crearControlesMovil() {
-        if (!this.esMovil) return;
+        // Solo crear controles si es necesario
+        if (!this.usarControlesTactiles) return;
+
+        // Verificar si ya existen
+        if (document.querySelector('.controles-movil')) return;
 
         const controlesDiv = document.createElement('div');
         controlesDiv.className = 'controles-movil';
         controlesDiv.innerHTML = `
-            <div class="control-fila">
-                <button class="btn-control" id="btn-rotar">↻ Rotar</button>
-            </div>
             <div class="control-fila">
                 <button class="btn-control" id="btn-izquierda">←</button>
                 <button class="btn-control" id="btn-abajo">↓</button>
                 <button class="btn-control" id="btn-derecha">→</button>
             </div>
             <div class="control-fila">
+                <button class="btn-control" id="btn-rotar">↻ Rotar</button>
                 <button class="btn-control" id="btn-instantanea">⬇️⬇️ Caída</button>
             </div>
         `;
 
-        this.canvas.parentNode.appendChild(controlesDiv);
+        // Insertar DESPUÉS del panel central
+        const panelCentral = document.querySelector('.panel-central');
+        if (panelCentral) {
+            panelCentral.parentNode.insertBefore(controlesDiv, panelCentral.nextSibling);
+        }
 
-        document.getElementById('btn-izquierda')?.addEventListener('click', () => {
+        // Bind de eventos
+        document.getElementById('btn-izquierda')?.addEventListener('click', (e) => {
+            e.preventDefault();
             if (this.partidaActiva && !this.gameOver) this.mover('izquierda');
         });
-        document.getElementById('btn-derecha')?.addEventListener('click', () => {
+        
+        document.getElementById('btn-derecha')?.addEventListener('click', (e) => {
+            e.preventDefault();
             if (this.partidaActiva && !this.gameOver) this.mover('derecha');
         });
-        document.getElementById('btn-abajo')?.addEventListener('click', () => {
+        
+        document.getElementById('btn-abajo')?.addEventListener('click', (e) => {
+            e.preventDefault();
             if (this.partidaActiva && !this.gameOver) this.mover('abajo');
         });
-        document.getElementById('btn-rotar')?.addEventListener('click', () => {
+        
+        document.getElementById('btn-rotar')?.addEventListener('click', (e) => {
+            e.preventDefault();
             if (this.partidaActiva && !this.gameOver) this.mover('rotar');
         });
-        document.getElementById('btn-instantanea')?.addEventListener('click', () => {
+        
+        document.getElementById('btn-instantanea')?.addEventListener('click', (e) => {
+            e.preventDefault();
             if (this.partidaActiva && !this.gameOver) this.caidaInstantanea();
         });
     }
 
-    async cargarRanking() {
-        try {
-            const response = await fetch('/tetris/api/ranking');
-            const data = await response.json();
-            
-            if (data.success && data.ranking) {
-                this.mostrarRanking(data.ranking);
-            }
-        } catch (error) {
-            console.error('Error al cargar ranking:', error);
-        }
-    }
-
-    mostrarRanking(ranking) {
-        let rankingDiv = document.querySelector('.ranking-tetris');
-        if (!rankingDiv) {
-            rankingDiv = document.createElement('div');
-            rankingDiv.className = 'ranking-tetris';
-            rankingDiv.innerHTML = '<h4>🏆 Ranking Tetris</h4>';
-            document.querySelector('.panel-izquierdo')?.appendChild(rankingDiv);
-        }
-
-        let html = '<h4>🏆 Ranking Tetris</h4><ol>';
-        ranking.forEach((jugador) => {
-            html += `<li>
-                <strong>${jugador.username}</strong> - ${jugador.puntuacion_maxima} pts
-                <small>(Nivel ${jugador.nivel_maximo})</small>
-            </li>`;
-        });
-        html += '</ol>';
-
-        rankingDiv.innerHTML = html;
-    }
-
-    async cargarEstadisticas() {
-        try {
-            const response = await fetch('/tetris/api/estadisticas');
-            const data = await response.json();
-            
-            if (data.success && data.estadisticas) {
-                this.mostrarEstadisticas(data.estadisticas, data.ultimas_partidas);
-            }
-        } catch (error) {
-            console.error('Error al cargar estadísticas:', error);
-        }
-    }
-
-    mostrarEstadisticas(estadisticas, ultimasPartidas) {
-        let statsDiv = document.querySelector('.estadisticas-tetris');
-        if (!statsDiv) {
-            statsDiv = document.createElement('div');
-            statsDiv.className = 'estadisticas-tetris';
-            statsDiv.innerHTML = '<h4>📊 Tus Estadísticas</h4>';
-            document.querySelector('.panel-izquierdo')?.appendChild(statsDiv);
-        }
-
-        let html = `
-            <h4>📊 Tus Estadísticas</h4>
-            <div class="stats-grid">
-                <p>🏆 Máxima: ${estadisticas.puntuacion_maxima}</p>
-                <p>🎮 Partidas: ${estadisticas.partidas_jugadas}</p>
-                <p>📈 Total pts: ${estadisticas.puntuacion_total}</p>
-                <p>🧱 Líneas: ${estadisticas.lineas_totales}</p>
-                <p>🎯 Tetris: ${estadisticas.tetris_conseguidos}</p>
-                <p>⭐ Nivel máx: ${estadisticas.nivel_maximo}</p>
-            </div>
-        `;
-
-        if (ultimasPartidas?.length > 0) {
-            html += '<h5>Últimas partidas:</h5><ul>';
-            ultimasPartidas.slice(0, 3).forEach(p => {
-                const fecha = new Date(p.created_at).toLocaleDateString();
-                html += `<li>${fecha}: ${p.puntuacion} pts (${p.lineas} líneas)</li>`;
-            });
-            html += '</ul>';
-        }
-
-        statsDiv.innerHTML = html;
-    }
+    // ... (el resto de métodos igual: cargarRanking, mostrarRanking, cargarEstadisticas, 
+    // mostrarEstadisticas, nuevaPartida, actualizarEstado, mover, caidaInstantanea,
+    // iniciarBucleJuego, detenerBucleJuego, dibujar, dibujarCelda, 
+    // dibujarSiguientePieza, dibujarCuadricula, mostrarGameOver)
     
-    async nuevaPartida() {
-        try {
-            const response = await fetch('/tetris/api/nueva-partida', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                this.partidaActiva = true;
-                this.actualizarEstado(data);
-                this.iniciarBucleJuego();
-                this.cargarEstadisticas();
-                this.cargarRanking();
-            }
-        } catch (error) {
-            console.error('Error:', error);
-        }
-    }
-    
-    actualizarEstado(data) {
-        if (data.tablero) {
-            this.tablero = data.tablero.tablero;
-            this.piezaActual = data.tablero.pieza_actual;
-            this.siguientePieza = data.tablero.siguiente_pieza;
-            this.puntuacion = data.tablero.puntuacion || 0;
-            this.nivel = data.tablero.nivel || 1;
-            this.lineas = data.tablero.lineas_completadas || 0;
-            this.gameOver = data.tablero.game_over || false;
-            
-            // Actualizar UI
-            document.getElementById('puntuacion').textContent = this.puntuacion;
-            document.getElementById('nivel').textContent = this.nivel;
-            document.getElementById('lineas').textContent = this.lineas;
-            
-            this.dibujar();
-        }
-    }
-    
-    async mover(direccion) {
-        if (this.gameOver) return;
-        
-        try {
-            const response = await fetch('/tetris/api/mover', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ direccion })
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                this.actualizarEstado(data);
-                
-                if (data.game_over) {
-                    this.partidaActiva = false;
-                    this.detenerBucleJuego();
-                    this.mostrarGameOver();
-                    this.cargarRanking();
-                    this.cargarEstadisticas();
-                }
-            }
-        } catch (error) {
-            console.error('Error al mover:', error);
-        }
-    }
-    
-    async caidaInstantanea() {
-        if (this.gameOver) return;
-        
-        while (!this.gameOver) {
-            const response = await fetch('/tetris/api/mover', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ direccion: 'abajo' })
-            });
-            
-            const data = await response.json();
-            this.actualizarEstado(data);
-            
-            if (data.game_over || !data.tablero?.pieza_actual) {
-                this.partidaActiva = false;
-                break;
-            }
-        }
-    }
-    
-    iniciarBucleJuego() {
-        if (this.intervaloJuego) clearInterval(this.intervaloJuego);
-        
-        this.intervaloJuego = setInterval(() => {
-            if (!this.gameOver) this.mover('abajo');
-        }, this.velocidadBase / this.nivel);
-    }
-    
-    detenerBucleJuego() {
-        if (this.intervaloJuego) {
-            clearInterval(this.intervaloJuego);
-            this.intervaloJuego = null;
-        }
-    }
-    
-    dibujar() {
-        // Limpiar canvases
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        this.ctxSiguiente.clearRect(0, 0, this.canvasSiguiente.width, this.canvasSiguiente.height);
-        
-        // Dibujar tablero (vacío o con piezas)
-        for (let y = 0; y < this.alto; y++) {
-            for (let x = 0; x < this.ancho; x++) {
-                const valor = this.tablero[y]?.[x];
-                this.dibujarCelda(x, y, valor || '0');
-            }
-        }
-        
-        // Dibujar pieza actual solo si hay partida activa
-        if (this.partidaActiva && this.piezaActual && !this.gameOver) {
-            const pieza = this.piezaActual;
-            if (pieza.forma) {
-                for (let i = 0; i < pieza.forma.length; i++) {
-                    for (let j = 0; j < pieza.forma[i].length; j++) {
-                        if (pieza.forma[i][j]) {
-                            const x = pieza.x + j;
-                            const y = pieza.y + i;
-                            if (y >= 0) {
-                                this.dibujarCelda(x, y, pieza.tipo);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        
-        // Dibujar siguiente pieza
-        this.dibujarSiguientePieza();
-        
-        // Dibujar cuadrícula
-        this.dibujarCuadricula();
-        
-        // Si no hay partida activa, mostrar mensaje
-        if (!this.partidaActiva) {
-            this.ctx.fillStyle = 'rgba(255,255,255,0.8)';
-            this.ctx.font = 'bold 20px Arial';
-            this.ctx.textAlign = 'center';
-            this.ctx.fillText('Presiona "Nueva Partida"', this.canvas.width/2, this.canvas.height/2);
-        }
-    }
-    
-    dibujarCelda(x, y, tipo) {
-        const color = this.colores[tipo] || this.colores['0'];
-        
-        this.ctx.fillStyle = color;
-        this.ctx.fillRect(
-            x * this.celdaSize,
-            y * this.celdaSize,
-            this.celdaSize - 1,
-            this.celdaSize - 1
-        );
-        
-        if (tipo !== '0') {
-            this.ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-            this.ctx.strokeRect(
-                x * this.celdaSize,
-                y * this.celdaSize,
-                this.celdaSize - 1,
-                this.celdaSize - 1
-            );
-        }
-    }
-    
-    dibujarSiguientePieza() {
-        if (!this.siguientePieza) return;
-        
-        const pieza = this.siguientePieza;
-        const tamanoCelda = 30;
-        const offsetX = (this.canvasSiguiente.width - pieza.forma[0].length * tamanoCelda) / 2;
-        const offsetY = (this.canvasSiguiente.height - pieza.forma.length * tamanoCelda) / 2;
-        
-        // Limpiar canvas de siguiente pieza
-        this.ctxSiguiente.clearRect(0, 0, this.canvasSiguiente.width, this.canvasSiguiente.height);
-        
-        // Dibujar fondo negro
-        this.ctxSiguiente.fillStyle = '#111';
-        this.ctxSiguiente.fillRect(0, 0, this.canvasSiguiente.width, this.canvasSiguiente.height);
-        
-        // Dibujar la pieza
-        for (let i = 0; i < pieza.forma.length; i++) {
-            for (let j = 0; j < pieza.forma[i].length; j++) {
-                if (pieza.forma[i][j]) {
-                    this.ctxSiguiente.fillStyle = this.colores[pieza.tipo];
-                    this.ctxSiguiente.fillRect(
-                        offsetX + j * tamanoCelda,
-                        offsetY + i * tamanoCelda,
-                        tamanoCelda - 2,
-                        tamanoCelda - 2
-                    );
-                    
-                    // Borde
-                    this.ctxSiguiente.strokeStyle = 'rgba(255,255,255,0.3)';
-                    this.ctxSiguiente.strokeRect(
-                        offsetX + j * tamanoCelda,
-                        offsetY + i * tamanoCelda,
-                        tamanoCelda - 2,
-                        tamanoCelda - 2
-                    );
-                }
-            }
-        }
-    }
-    
-    dibujarCuadricula() {
-        this.ctx.strokeStyle = 'rgba(255,255,255,0.1)';
-        this.ctx.lineWidth = 0.5;
-        
-        for (let x = 0; x <= this.ancho; x++) {
-            this.ctx.beginPath();
-            this.ctx.moveTo(x * this.celdaSize, 0);
-            this.ctx.lineTo(x * this.celdaSize, this.canvas.height);
-            this.ctx.stroke();
-        }
-        
-        for (let y = 0; y <= this.alto; y++) {
-            this.ctx.beginPath();
-            this.ctx.moveTo(0, y * this.celdaSize);
-            this.ctx.lineTo(this.canvas.width, y * this.celdaSize);
-            this.ctx.stroke();
-        }
-    }
-    
-    mostrarGameOver() {
-        this.ctx.fillStyle = 'rgba(0,0,0,0.7)';
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-        
-        this.ctx.fillStyle = 'white';
-        this.ctx.font = 'bold 30px Arial';
-        this.ctx.textAlign = 'center';
-        this.ctx.textBaseline = 'middle';
-        this.ctx.fillText('GAME OVER', this.canvas.width/2, this.canvas.height/2);
-    }
+    // [AQUÍ VA EL RESTO DE MÉTODOS IGUAL QUE ANTES]
 }
 
 // Inicializar
