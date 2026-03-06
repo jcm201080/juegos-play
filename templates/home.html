@@ -21,6 +21,16 @@
             Entrar al bingo
         </a>
     </article>
+
+    <!-- templates/home.html - Añadir después del ajedrez -->
+    {# tetris - NUEVO! #}
+    <article class="game-card game-card-nuevo">
+        <div class="game-ribbon">🆕 NUEVO</div>
+        <h2>🧩 Tetris <span class="game-badge">MODO PRUEBAS</span></h2>
+        <p>El clásico juego de bloques. ¡Haz tetris y consigue la máxima puntuación!</p>
+        <a class="btn-primary pulse" href="{{ url_for('tetris.index') }}">¡Probar Tetris!</a>
+    </article>
+    
     {# Juego de cálculo rápido #}
     <article class="game-card">
         <h2>🧮 Juego de Cálculo Rápido</h2>
@@ -61,7 +71,7 @@
         <h2>♟️ Ajedrez</h2>
         <p>Juega al clásico juego de estrategia.</p>
         <a class="btn-primary" href="{{ url_for('chess_routes.chess') }}">Jugar ahora</a>
-    </article>
+    </article> 
     
 
 

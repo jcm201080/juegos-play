@@ -291,6 +291,45 @@ def test_agente_portfolio():
         "juegos": ["bingo", "puzzle", "math", "english", "chess"]
     })
 
+
+# app.py - Añadir al final de las importaciones (al principio del archivo)
+from tetris.routes.tetris_routes import tetris_bp
+
+# app.py - Añadir después de registrar los otros blueprints
+# (busca donde registras los blueprints del bingo y añade esta línea)
+app.register_blueprint(tetris_bp)
+
+# También necesitaremos el endpoint para el agente IA del Tetris
+# Esto va en ai/agente_router.py, pero por ahora podemos añadir una ruta temporal
+# en app.py para probar:
+
+@app.route('/api/tetris-ai', methods=['POST'])
+def tetris_ai_temporal():
+    """Endpoint temporal para el asistente IA del Tetris"""
+    from flask import jsonify
+    import random
+    
+    data = request.json
+    puntuacion = data.get('puntuacion', 0)
+    nivel = data.get('nivel', 1)
+    
+    # Consejos aleatorios por ahora (luego lo conectaremos con tu agente real)
+    consejos = [
+        "¡Intenta hacer Tetris (4 líneas) para más puntos!",
+        "Guarda el hueco para la pieza larga (I)",
+        "No dejes huecos aislados",
+        "Intenta mantener el tablero plano",
+        "La pieza T es útil para girar en espacios pequeños",
+        f"Vas bien, ¡{puntuacion} puntos! Sigue así",
+        "Si puedes, coloca las piezas en los bordes",
+        "Mira la siguiente pieza y planifica"
+    ]
+    
+    return jsonify({
+        'success': True,
+        'consejo': random.choice(consejos)
+    })
+
 # =========================
 # ▶️ Arranque local
 # =========================

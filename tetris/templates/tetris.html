@@ -1,0 +1,61 @@
+<!-- tetris/templates/tetris.html -->
+{% extends "base.html" %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('tetris.static', filename='tetris.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="tetris-container">
+    <div class="juego-principal">
+        <div class="panel-izquierdo">
+            <div class="info-jugador">
+                <h3>Jugador: {{ usuario.username if usuario else session.get('username', 'Invitado') }}</h3>
+                <div class="puntuacion">
+                    <span>Puntuación: <span id="puntuacion">0</span></span>
+                </div>
+                <div class="nivel">
+                    <span>Nivel: <span id="nivel">1</span></span>
+                </div>
+                <div class="lineas">
+                    <span>Líneas: <span id="lineas">0</span></span>
+                </div>
+            </div>
+            
+            <div class="siguiente-pieza">
+                <h4>Siguiente pieza:</h4>
+                <canvas id="canvas-siguiente" width="120" height="120"></canvas>
+            </div>
+            
+            <div class="controles">
+                <h4>Controles:</h4>
+                <p>← → : Mover</p>
+                <p>↑ : Rotar</p>
+                <p>↓ : Bajar rápido</p>
+                <p>Espacio : Caída instantánea</p>
+            </div>
+            
+            <button id="btn-nueva-partida" class="btn-nueva">Nueva Partida</button>
+        </div>
+        
+        <div class="panel-central">
+            <canvas id="canvas-tetris" width="300" height="600"></canvas>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('tetris.static', filename='tetris.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const juego = new TetrisGame('canvas-tetris', 'canvas-siguiente');
+        
+        document.getElementById('btn-nueva-partida').addEventListener('click', function() {
+            juego.nuevaPartida();
+        });
+    });
+</script>
+{% endblock %}

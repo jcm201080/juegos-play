@@ -308,6 +308,56 @@ def init_db():
             FROM users WHERE username = ?
         """, (*stats, username))
 
+    # =====================================================
+    # 🔹 TABLAS PARA EL TETRIS (CORREGIDO - SIN COMENTARIOS #)
+    # =====================================================
+
+    # Estadísticas acumuladas por usuario
+    cur.execute(
+        """
+        CREATE TABLE IF NOT EXISTS tetris_stats (
+            user_id INTEGER PRIMARY KEY,
+            partidas_jugadas INTEGER DEFAULT 0,
+            partidas_ganadas INTEGER DEFAULT 0,
+            puntuacion_maxima INTEGER DEFAULT 0,
+            puntuacion_total INTEGER DEFAULT 0,
+            lineas_totales INTEGER DEFAULT 0,
+            tetris_conseguidos INTEGER DEFAULT 0,
+            nivel_maximo INTEGER DEFAULT 1,
+            tiempo_total_jugado INTEGER DEFAULT 0,
+            FOREIGN KEY(user_id) REFERENCES users(id)
+        )
+        """
+    )
+
+    # Historial de partidas
+    cur.execute(
+        """
+        CREATE TABLE IF NOT EXISTS tetris_partidas (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            puntuacion INTEGER NOT NULL,
+            nivel INTEGER NOT NULL,
+            lineas INTEGER NOT NULL,
+            tetris_conseguidos INTEGER DEFAULT 0,
+            duracion_sec INTEGER NOT NULL,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(user_id) REFERENCES users(id)
+        )
+        """
+    )
+
+    # Índices
+    cur.execute("""
+    CREATE INDEX IF NOT EXISTS idx_tetris_partidas_user 
+    ON tetris_partidas(user_id)
+    """)
+
+    cur.execute("""
+    CREATE INDEX IF NOT EXISTS idx_tetris_partidas_puntuacion 
+    ON tetris_partidas(puntuacion DESC)
+    """)
+
 
             
 
@@ -408,3 +458,117 @@ def contar_usuarios():
     total = cur.fetchone()[0]
     conn.close()
     return total
+
+
+# db.py - Añadir al final del archivo
+
+# =====================================================
+# 🔹 FUNCIONES PARA TETRIS
+# =====================================================
+
+def ensure_tetris_stats(user_id):
+    """Asegura que existe el registro de estadísticas para un usuario"""
+    conn = get_connection()
+    cur = conn.cursor()
+    
+    cur.execute("""
+        INSERT OR IGNORE INTO tetris_stats (user_id)
+        VALUES (?)
+    """, (user_id,))
+    
+    conn.commit()
+    conn.close()
+
+def guardar_partida_tetris(user_id, puntuacion, nivel, lineas, tetris_conseguidos, duracion_sec):
+    """Guarda una partida completada y actualiza estadísticas"""
+    conn = get_connection()
+    cur = conn.cursor()
+    
+    # Asegurar que existen las estadísticas
+    cur.execute("""
+        INSERT OR IGNORE INTO tetris_stats (user_id)
+        VALUES (?)
+    """, (user_id,))
+    
+    # Insertar la partida
+    cur.execute("""
+        INSERT INTO tetris_partidas 
+        (user_id, puntuacion, nivel, lineas, tetris_conseguidos, duracion_sec)
+        VALUES (?, ?, ?, ?, ?, ?)
+    """, (user_id, puntuacion, nivel, lineas, tetris_conseguidos, duracion_sec))
+    
+    # Actualizar estadísticas
+    cur.execute("""
+        UPDATE tetris_stats SET
+            partidas_jugadas = partidas_jugadas + 1,
+            puntuacion_total = puntuacion_total + ?,
+            lineas_totales = lineas_totales + ?,
+            tetris_conseguidos = tetris_conseguidos + ?,
+            tiempo_total_jugado = tiempo_total_jugado + ?,
+            nivel_maximo = MAX(nivel_maximo, ?),
+            puntuacion_maxima = MAX(puntuacion_maxima, ?)
+        WHERE user_id = ?
+    """, (puntuacion, lineas, tetris_conseguidos, duracion_sec, nivel, puntuacion, user_id))
+    
+    conn.commit()
+    conn.close()
+    
+    return True
+
+def obtener_ranking_tetris(limite=10):
+    """Obtiene el ranking de mejores puntuaciones"""
+    conn = get_connection()
+    cur = conn.cursor()
+    
+    cur.execute("""
+        SELECT 
+            u.username,
+            u.id as user_id,
+            ts.puntuacion_maxima,
+            ts.partidas_jugadas,
+            ts.lineas_totales,
+            ts.tetris_conseguidos,
+            ts.nivel_maximo
+        FROM tetris_stats ts
+        JOIN users u ON u.id = ts.user_id
+        WHERE ts.puntuacion_maxima > 0
+        ORDER BY ts.puntuacion_maxima DESC
+        LIMIT ?
+    """, (limite,))
+    
+    ranking = cur.fetchall()
+    conn.close()
+    
+    return [dict(row) for row in ranking]
+
+def obtener_estadisticas_tetris(user_id):
+    """Obtiene las estadísticas de un usuario"""
+    conn = get_connection()
+    cur = conn.cursor()
+    
+    cur.execute("""
+        SELECT * FROM tetris_stats
+        WHERE user_id = ?
+    """, (user_id,))
+    
+    stats = cur.fetchone()
+    conn.close()
+    
+    return dict(stats) if stats else None
+
+def obtener_ultimas_partidas_tetris(user_id, limite=5):
+    """Obtiene las últimas partidas de un usuario"""
+    conn = get_connection()
+    cur = conn.cursor()
+    
+    cur.execute("""
+        SELECT * FROM tetris_partidas
+        WHERE user_id = ?
+        ORDER BY created_at DESC
+        LIMIT ?
+    """, (user_id, limite))
+    
+    partidas = cur.fetchall()
+    conn.close()
+    
+    return [dict(row) for row in partidas]
