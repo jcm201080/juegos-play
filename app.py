@@ -35,7 +35,7 @@ eventlet.monkey_patch()  # Habilitar monkey patch para compatibilidad con Socket
 # =========================
 # 📦 Imports Flask
 # =========================
-from flask import Flask, request, session
+from flask import Flask, request, session, jsonify
 from flask_cors import CORS
 from flask_socketio import SocketIO
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -245,13 +245,60 @@ def bingo_ai():
         return {"respuesta": "⚠️ Error en el servidor de IA"}
 
 # =========================
+# 🔗 Endpoint para el agente del portfolio
+# =========================
+@app.route("/api/agente-portfolio", methods=["POST"])
+def agente_para_portfolio():
+    """
+    Endpoint específico para que el agente del portfolio consulte información
+    sobre los juegos. Más permisivo y con contexto adaptado.
+    """
+    try:
+        data = request.get_json(silent=True) or {}
+        pregunta = data.get("pregunta", "")
+        
+        if not pregunta:
+            return jsonify({
+                "respuesta": "No he recibido ninguna pregunta.",
+                "fuente": "agente_juegos"
+            })
+        
+        # Usar el agente general de juegos (que ya tiene su propio router)
+        respuesta = preguntar_agente_general(pregunta, pagina="general")
+        
+        # Añadir un pequeño contexto extra si la respuesta es muy corta
+        if len(respuesta) < 50:
+            respuesta += "\n\nPuedes ver todos los juegos en: https://juegos.jesuscmweb.com"
+        
+        return jsonify({
+            "respuesta": respuesta,
+            "fuente": "agente_juegos"
+        })
+        
+    except Exception as e:
+        print(f"Error en agente-para-portfolio: {e}")
+        return jsonify({
+            "respuesta": "Los juegos están disponibles en https://juegos.jesuscmweb.com. Tenemos Bingo, puzzles, juegos de matemáticas y más.",
+            "fuente": "agente_juegos_fallback"
+        })
+
+# Endpoint de prueba para verificar que el agente responde
+@app.route("/api/agente-portfolio/test", methods=["GET"])
+def test_agente_portfolio():
+    return jsonify({
+        "status": "ok",
+        "mensaje": "Endpoint del agente de juegos para portfolio activo",
+        "juegos": ["bingo", "puzzle", "math", "english", "chess"]
+    })
+
+# =========================
 # ▶️ Arranque local
 # =========================
 if __name__ == "__main__":
     socketio.run(
         app,
         host="0.0.0.0",
-        port=5000,
+        port=5001,
         debug=not IS_PROD,
         allow_unsafe_werkzeug=True  # Considera eliminar esto en producción
     )
