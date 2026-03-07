@@ -381,9 +381,8 @@
 }
 
 canvas {
-    touch-action: none;
+    touch-action: manipulation;
 }
-
 #canvas-siguiente{
     width:80px;
     height:80px;

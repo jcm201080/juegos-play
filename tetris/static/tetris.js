@@ -110,7 +110,6 @@ class TetrisGame {
             let touchStartTime = 0;
 
             this.canvas.addEventListener('touchstart', (e) => {
-                e.preventDefault();
                 const touch = e.touches[0];
                 touchStartX = touch.clientX;
                 touchStartY = touch.clientY;
@@ -118,7 +117,6 @@ class TetrisGame {
             });
 
             this.canvas.addEventListener('touchend', (e) => {
-                e.preventDefault();
                 if (!this.partidaActiva || this.gameOver || !touchStartX) return;
 
                 const touchEnd = e.changedTouches[0];
@@ -438,6 +436,31 @@ class TetrisGame {
                 this.dibujarCelda(x, y, valor || '0');
             }
         }
+        // 👻 Dibujar pieza fantasma
+        const yFantasma = this.obtenerPosicionFantasma();
+
+        if (yFantasma !== null && this.piezaActual) {
+
+            const pieza = this.piezaActual;
+
+            this.ctx.globalAlpha = 0.05;
+
+            for (let i = 0; i < pieza.forma.length; i++) {
+                for (let j = 0; j < pieza.forma[i].length; j++) {
+
+                    if (!pieza.forma[i][j]) continue;
+
+                    const x = pieza.x + j;
+                    const y = yFantasma + i;
+
+                    if (y >= 0) {
+                        this.dibujarCelda(x, y, pieza.tipo);
+                    }
+                }
+            }
+
+            this.ctx.globalAlpha = 1;
+        }
         
         // Dibujar pieza actual solo si hay partida activa
         if (this.partidaActiva && this.piezaActual && !this.gameOver) {
@@ -459,31 +482,7 @@ class TetrisGame {
             }
         }
 
-        // 👻 Dibujar pieza fantasma
-        const yFantasma = this.obtenerPosicionFantasma();
-
-        if (yFantasma !== null) {
-
-            const pieza = this.piezaActual;
-
-            this.ctx.globalAlpha = 0.15;
-
-            for (let i = 0; i < pieza.forma.length; i++) {
-                for (let j = 0; j < pieza.forma[i].length; j++) {
-
-                    if (!pieza.forma[i][j]) continue;
-
-                    const x = pieza.x + j;
-                    const y = yFantasma + i;
-
-                    if (y >= 0) {
-                        this.dibujarCelda(x, y, pieza.tipo);
-                    }
-                }
-            }
-
-            this.ctx.globalAlpha = 1;
-        }
+        
         
         // Dibujar siguiente pieza
         this.dibujarSiguientePieza();
