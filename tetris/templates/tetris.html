@@ -13,6 +13,7 @@
         <div class="panel-izquierdo">
             <div class="info-jugador">
                 <h3>Jugador: {{ usuario.username if usuario else session.get('username', 'Invitado') }}</h3>
+                <button id="btn-nueva-partida" class="btn-nueva">Nueva Partida</button>
                 <div class="puntuacion">
                     <span>Puntuación: <span id="puntuacion">0</span></span>
                 </div>
@@ -25,19 +26,10 @@
             </div>
             
             <div class="siguiente-pieza">
-                <h4>Siguiente pieza:</h4>
                 <canvas id="canvas-siguiente" width="120" height="120"></canvas>
             </div>
             
-            <div class="controles">
-                <h4>Controles:</h4>
-                <p>← → : Mover</p>
-                <p>↑ : Rotar</p>
-                <p>↓ : Bajar rápido</p>
-                <p>Espacio : Caída instantánea</p>
-            </div>
             
-            <button id="btn-nueva-partida" class="btn-nueva">Nueva Partida</button>
         </div>
         
         <div class="panel-central">

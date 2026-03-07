@@ -22,6 +22,14 @@
         </a>
     </article>
 
+    <!-- templates/home.html - Añadir después del ajedrez -->
+    {# tetris - NUEVO! #}
+    <article class="game-card game-card-nuevo">
+        <div class="game-ribbon">🆕 NUEVO</div>
+        <h2>🧩 Tetris <span class="game-badge">MODO PRUEBAS</span></h2>
+        <p>El clásico juego de bloques. ¡Haz tetris y consigue la máxima puntuación!</p>
+        <a class="btn-primary pulse" href="{{ url_for('tetris.index') }}">¡Probar Tetris!</a>
+    </article>
     
     
     {# Juego de cálculo rápido #}
@@ -87,11 +95,3 @@
 {% endif %} {% endblock %}
 
 
-<!-- templates/home.html - Añadir después del ajedrez -->
-    <!-- {# tetris - NUEVO! #}
-    <article class="game-card game-card-nuevo">
-        <div class="game-ribbon">🆕 NUEVO</div>
-        <h2>🧩 Tetris <span class="game-badge">MODO PRUEBAS</span></h2>
-        <p>El clásico juego de bloques. ¡Haz tetris y consigue la máxima puntuación!</p>
-        <a class="btn-primary pulse" href="{{ url_for('tetris.index') }}">¡Probar Tetris!</a>
-    </article> -->
