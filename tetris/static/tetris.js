@@ -195,16 +195,19 @@ class TetrisGame {
         // Bind de eventos
         const bindButton = (id, accion) => {
             const btn = document.getElementById(id);
-            if (btn) {
-                btn.addEventListener('touchend', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
+            if (!btn) return;
 
-                    console.log(`🎮 Touch en ${id}`);
+            // móvil
+            btn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                accion();
+            });
 
-                    accion();
-                });
-            }
+            // ordenador
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                accion();
+            });
         };
 
         bindButton('btn-izquierda', () => this.mover('izquierda'));
