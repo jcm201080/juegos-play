@@ -39,7 +39,7 @@ from flask import Flask, request, session, jsonify
 from flask_cors import CORS
 from flask_socketio import SocketIO
 from werkzeug.middleware.proxy_fix import ProxyFix
-from db import init_db
+from db import init_db, get_connection
 
 # =========================
 # 📦 Blueprints
@@ -67,6 +67,9 @@ from bingo.routes.ranking_routes import ranking_bp
 from bingo.bingo_online.routes.bingo_online_routes import bingo_online_routes
 from bingo.bingo_online.sockets.bingo_online_socket import register_bingo_online_sockets
 from bingo.classic.sockets.bingo_socket import salas_bingo
+
+from routes.perfil_routes import perfil_bp
+
 
 # 🧠 Agente de Bingo
 import os
@@ -178,6 +181,7 @@ app.register_blueprint(bingo_routes)
 app.register_blueprint(bingo_online_routes)
 app.register_blueprint(ranking_bp)
 app.register_blueprint(admin_bp)
+app.register_blueprint(perfil_bp)
 
 # =========================
 # 🧠 Agente general
@@ -189,13 +193,38 @@ def ai_general():
 
     data = request.get_json(silent=True) or {}
 
-    pregunta = data.get("mensaje", "")
-    pagina = data.get("pagina", "")
+    pregunta = data.get("mensaje") or data.get("pregunta") or ""
+
+    pagina = request.path.lower()
 
     if not pregunta:
         return {"respuesta": "No he recibido ninguna pregunta."}
 
-    respuesta = preguntar_agente_general(pregunta)
+    usuario = None
+
+    if "user_id" in session:
+
+        conn = get_connection()
+        cur = conn.cursor()
+
+        cur.execute("""
+        SELECT username, avatar, total_score, level_unlocked
+        FROM users
+        WHERE id = ?
+        """, (session["user_id"],))
+
+        row = cur.fetchone()
+        conn.close()
+
+        if row:
+            usuario = {
+                "username": row["username"],
+                "avatar": row["avatar"],
+                "score": row["total_score"],
+                "level": row["level_unlocked"]
+            }
+
+    respuesta = preguntar_agente_general(pregunta, pagina, usuario=usuario)
 
     return {"respuesta": respuesta}
 # =========================
@@ -255,7 +284,11 @@ def agente_para_portfolio():
     """
     try:
         data = request.get_json(silent=True) or {}
-        pregunta = data.get("pregunta", "")
+
+        pregunta = data.get("mensaje") or data.get("pregunta") or ""
+
+        # detectar página automáticamente
+        pagina = request.path.lower()
         
         if not pregunta:
             return jsonify({

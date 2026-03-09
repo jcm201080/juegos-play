@@ -36,7 +36,7 @@ juegos-play/
 │
 ├── routes/ # 📍 RUTAS Y CONTROLADORES
 │ ├── auth_routes.py # Autenticación (login/registro)
-│ ├── perfil_routes.py # Perfil de usuario
+│ ├── perfil_routes.py # 👤 Perfil de usuario
 │ ├── home_routes.py # Página principal
 │ ├── admin_routes.py # Panel de administración
 │ ├── juego_mate_routes.py # Juego de cálculo
@@ -45,80 +45,93 @@ juegos-play/
 │ └── chess_routes.py # Ajedrez
 │
 ├── bingo/ # 🎱 JUEGO DE BINGO
-│ │
-│ ├── logic/ # Motor compartido
-│ │ ├── bolas.py # Gestión del bombo
-│ │ ├── cartones.py # Generación de cartones
-│ │ ├── validaciones.py # Validación de línea/bingo
-│ │ ├── bingo_stats.py # Estadísticas de bingo
-│ │ └── bingo_online_stats.py # Estadísticas online
-│ │
-│ ├── classic/ # Bingo clásico (salas privadas)
-│ │ ├── routes/
-│ │ │ └── bingo_routes.py # API del bingo clásico
-│ │ ├── templates/
-│ │ │ └── bingo_sala.html # Interfaz de sala
-│ │ └── sockets/
-│ │ └── bingo_socket.py # WebSockets tiempo real
-│ │
-│ └── bingo_online/ # Bingo online (matchmaking)
-│ ├── routes/
-│ │ └── bingo_online_routes.py
-│ ├── templates/
-│ │ └── bingo_online.html
-│ ├── sockets/
-│ │ └── bingo_online_socket.py
-│ └── state.py # Estado global de salas
+│
+│   ├── logic/ # Motor compartido
+│   │ ├── bolas.py # Gestión del bombo
+│   │ ├── cartones.py # Generación de cartones
+│   │ ├── validaciones.py # Validación de línea/bingo
+│   │ ├── bingo_stats.py # Estadísticas de bingo
+│   │ └── bingo_online_stats.py # Estadísticas online
+│
+│   ├── classic/ # Bingo clásico (salas privadas)
+│   │ ├── routes/
+│   │ │ └── bingo_routes.py # API del bingo clásico
+│   │ ├── templates/
+│   │ │ └── bingo_sala.html # Interfaz de sala
+│   │ └── sockets/
+│   │     └── bingo_socket.py # WebSockets tiempo real
+│
+│   └── bingo_online/ # Bingo online (matchmaking)
+│       ├── routes/
+│       │ └── bingo_online_routes.py
+│       ├── templates/
+│       │ └── bingo_online.html
+│       ├── sockets/
+│       │ └── bingo_online_socket.py
+│       └── state.py # Estado global de salas
 │
 ├── tetris/ # 🧩 JUEGO DE TETRIS
-│ │
-│ ├── logic/ # Lógica del juego
-│ │ ├── piezas.py # Definición de 7 piezas (I,O,T,S,Z,L,J)
-│ │ └── tablero.py # Lógica de movimientos y colisiones
-│ │
-│ ├── routes/
-│ │ └── tetris_routes.py # API REST del Tetris
-│ │ ├── / # Página del juego
-│ │ ├── /api/nueva-partida # Iniciar partida
-│ │ ├── /api/mover # Mover pieza
-│ │ ├── /api/estado # Estado actual
-│ │ ├── /api/ranking # Ranking global
-│ │ └── /api/estadisticas # Estadísticas personales
-│ │
-│ ├── static/
-│ │ ├── tetris.css # Estilos específicos
-│ │ └── tetris.js # Cliente con Canvas y controles
-│ │
-│ └── templates/
-│ └── tetris.html # Interfaz del juego
+│
+│   ├── logic/ # Lógica del juego
+│   │ ├── piezas.py # Definición de piezas
+│   │ └── tablero.py # Movimientos y colisiones
+│
+│   ├── routes/
+│   │ └── tetris_routes.py # API REST del Tetris
+│
+│   ├── static/
+│   │ ├── tetris.css # Estilos específicos
+│   │ └── tetris.js # Cliente con Canvas
+│
+│   └── templates/
+│       └── tetris.html # Interfaz del juego
 │
 ├── static/ # 🎨 ARCHIVOS ESTÁTICOS GLOBALES
-│ ├── css/
-│ │ ├── style.css # Estilos globales
-│ │ └── responsive.css # Media queries
-│ ├── js/
-│ │ ├── main.js # JavaScript global
-│ │ └── modal.js # Modal de login/registro
-│ └── sounds/ # Efectos de sonido
+│
+│   ├── css/
+│   │ ├── style.css # Estilos globales
+│   │ ├── responsive.css # Media queries
+│   │ └── perfil.css # 👤 Estilos del perfil
+│
+│   ├── js/
+│   │ ├── main.js # JavaScript global
+│   │ ├── modal.js # Modal de login
+│   │ ├── perfil.js # 👤 Gestión del perfil
+│   │ └── ai_assistant.js # Asistente IA global
+│
+│   ├── img/
+│   │   └── avatars/ # Avatares disponibles
+│   │       ├── burger.svg
+│   │       ├── robot.svg
+│   │       ├── alien.svg
+│   │       ├── ninja.svg
+│   │       └── brain.svg
+│
+│   └── sounds/ # Efectos de sonido
 │
 ├── templates/ # 📄 PLANTILLAS HTML
-│ ├── base.html # Plantilla base con navbar
-│ ├── home.html # Página principal con grid de juegos
-│ ├── perfil.html # Perfil de usuario
-│ ├── login_modal.html # Modal de autenticación
-│ └── admin/ # Panel de administración
-│ └── dashboard.html
+│
+│   ├── base.html # Plantilla base
+│   ├── home.html # Página principal
+│
+│   ├── perfil/ # 👤 Perfil de usuario
+│   │   └── perfil.html
+│
+│   ├── login_modal.html # Modal de login
+│
+│   └── admin/
+│       └── dashboard.html
 │
 ├── utils/ # 🛠 UTILIDADES
 │ ├── visitas.py # Contador de visitas
 │ └── validators.py # Validadores
 │
 ├── models/ # 📊 MODELOS DE DATOS
-│ ├── init.py # Exporta modelos
-│ └── visita.py # Modelo de visitas
+│ ├── __init__.py
+│ └── visita.py
 │
 ├── database/ # 💾 BASE DE DATOS
-│ └── play.db # SQLite database
+│ └── play.db
 │
 └── venv/ # Entorno virtual Python
 
@@ -370,6 +383,92 @@ tetris_partidas (
 -- Índices para mejorar rendimiento
 CREATE INDEX IF NOT EXISTS idx_tetris_partidas_user ON tetris_partidas(user_id);
 CREATE INDEX IF NOT EXISTS idx_tetris_partidas_puntuacion ON tetris_partidas(puntuacion DESC);
+
+## 👤 Sistema de Perfil de Usuario
+
+Cada jugador dispone de un perfil personal donde puede gestionar su identidad dentro de la plataforma y consultar información básica de su cuenta.
+
+### Características del Perfil
+
+- 📧 Email del usuario
+- 👤 Nombre de usuario editable
+- 🖼 Sistema de avatar personalizable
+- 📅 Fecha de creación de la cuenta
+- 📊 Preparado para mostrar estadísticas de juegos
+
+### Avatares
+
+Los usuarios pueden seleccionar diferentes tipos de avatar:
+
+**Avatares internos de la plataforma**
+
+- 🍔 Hamburguesa gamer
+- 🤖 Robot
+- 👾 Alien
+- 🥷 Ninja
+- 🧠 Cerebro IA
+
+**Avatares generados dinámicamente**
+
+La plataforma también soporta avatares generados automáticamente mediante la API de **DiceBear**, lo que permite crear personajes únicos como:
+
+- 👨 Hombre rubio
+- 👨 Hombre moreno
+- 👨 Hombre con barba
+- 👨 Hombre con bigote
+- 👨 Hombre calvo
+- 👩 Mujer rubia
+- 👩 Mujer morena
+- 👩 Mujer pelirroja
+- 👩 Mujer con gafas
+- 👩 Mujer de pelo corto
+
+### Funciones disponibles
+
+Desde la página de perfil el usuario puede:
+
+- Cambiar su nombre de usuario
+- Seleccionar un avatar
+- Consultar información básica de su cuenta
+- Acceder a su historial de juegos (en desarrollo)
+
+### Ruta del Perfil
+
+Carga la página de perfil del usuario autenticado.
+
+### API del Perfil
+
+**Cambiar nombre de usuario**
+
+Request:
+
+```json
+{
+  "username": "nuevo_nombre"
+}
+
+{
+  "success": true
+}
+
+POST /perfil/api/cambiar-avatar
+{
+  "avatar": "robot.svg"
+}
+{
+  "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=man_beard"
+}
+{
+  "success": true
+}
+Integración con el sistema de IA
+
+El asistente inteligente de la plataforma tiene acceso al contexto del usuario actual:
+
+username
+avatar
+nivel alcanzado
+puntuación total
 
 🚀 Instalación
 Requisitos Previos

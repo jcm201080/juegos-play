@@ -41,7 +41,9 @@ def init_db():
             role TEXT DEFAULT 'user',
             created_at TEXT DEFAULT CURRENT_TIMESTAMP,
             reset_token TEXT,
-            reset_expires TEXT
+            reset_expires TEXT,
+            avatar TEXT DEFAULT 'default.png',
+            photo TEXT
         );
 
         """

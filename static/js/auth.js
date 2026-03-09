@@ -70,6 +70,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const forgotPasswordLink = document.getElementById("forgotPasswordLink");
 
+    
+    
+
+
     // ===============================
     // 🎛 Tabs Login / Register
     // ===============================
@@ -169,12 +173,44 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (openAuthBtn) openAuthBtn.classList.toggle("hidden", !!user);
 
+        const headerAvatar = document.getElementById("headerAvatar");
+
         if (headerUsernameBox && headerUsernameText) {
+
             if (user) {
+
                 headerUsernameText.textContent = user.username;
                 headerUsernameBox.classList.remove("hidden");
+
+                // 🔹 ACTUALIZAR AVATAR
+                if (headerAvatar) {
+
+                    if (user.photo) {
+
+                        headerAvatar.src = "/static/" + user.photo;
+
+                    } else if (user.avatar && user.avatar.startsWith("http")) {
+
+                        // avatar externo (dicebear)
+                        headerAvatar.src = user.avatar;
+
+                    } else {
+
+                        // avatar local
+                        headerAvatar.src = "/static/img/avatars/" + (user.avatar || "default.svg");
+
+                    }
+
+                }
+
             } else {
+
                 headerUsernameBox.classList.add("hidden");
+
+                if (headerAvatar) {
+                    headerAvatar.src = "/static/img/avatars/default.svg";
+                }
+
             }
         }
 

@@ -100,7 +100,8 @@ def register():
 
         cur.execute(
             """
-            SELECT id, username, best_score, total_score, level_unlocked
+            SELECT id, username, best_score, total_score,
+                level_unlocked, avatar, photo
             FROM users
             WHERE id = ?
             """,
@@ -143,7 +144,7 @@ def login():
     cur.execute(
         """
         SELECT id, email, username, best_score, total_score,
-               level_unlocked, password_hash, role
+            level_unlocked, password_hash, role, avatar, photo
         FROM users
         WHERE email = ?
         """,
@@ -177,6 +178,8 @@ def login():
         "best_score": row["best_score"],
         "total_score": row["total_score"],
         "level_unlocked": row["level_unlocked"],
+        "avatar": row["avatar"],
+        "photo": row["photo"]
     }
 
     return jsonify({"success": True, "user": user})
@@ -206,7 +209,8 @@ def me():
 
     cur.execute(
         """
-        SELECT id, username, best_score, total_score, level_unlocked
+        SELECT id, username, best_score, total_score,
+            level_unlocked, avatar, photo
         FROM users
         WHERE id = ?
         """,

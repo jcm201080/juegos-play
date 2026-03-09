@@ -49,11 +49,11 @@
                         <a href="{{ url_for('main.home') }}" class="header-link">Inicio</a>
                         <!-- 🔹 Enlace a Historial: solo visible si hay usuario -->
                         <a
-                            href="{{ url_for('main.historial') }}"
-                            class="header-link hidden"
-                            id="headerHistoryLink"
+                            href="{{ url_for('perfil.perfil') }}"
+                            class="header-link"
+                            id="headerProfileLink"
                         >
-                            Historial
+                            Perfil
                         </a>
                     </nav>
                 </div>
@@ -67,7 +67,15 @@
 
                     <!-- Logueado: nombre + botón salir -->
                     <div id="headerUsernameBox" class="header-username hidden">
-                        👤 <span id="headerUsernameText"></span>
+
+                        <img
+                            id="headerAvatar"
+                            src="{{ url_for('static', filename='img/avatars/default.png') }}"
+                            class="header-avatar"
+                        >
+
+                        <span id="headerUsernameText"></span>
+
                     </div>
                     <br />
                     <button id="headerLogoutBtn" class="btn-secondary header-btn hidden">
@@ -94,7 +102,7 @@
                 <input
                     id="aiInput"
                     type="text"
-                    placeholder="Pregunta sobre el juego...""
+                    placeholder="Pregunta sobre el juego..."
                 >
 
                 <button id="aiSend">

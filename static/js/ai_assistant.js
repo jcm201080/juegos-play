@@ -56,8 +56,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
-                        mensaje: mensaje,
-                        pagina: window.location.pathname
+                        mensaje: mensaje
                     })
                 });
 

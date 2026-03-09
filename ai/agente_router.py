@@ -45,7 +45,7 @@ Responde SOLO con una palabra, sin puntos ni nada más.
         return "general"
 
 
-def preguntar_agente_general(pregunta, pagina="", contexto_adicional=None):
+def preguntar_agente_general(pregunta, pagina="", contexto_adicional=None, usuario=None):
     """
     Router principal que decide qué agente usar.
     
@@ -54,6 +54,18 @@ def preguntar_agente_general(pregunta, pagina="", contexto_adicional=None):
         pagina (str): Página actual (home, bingo, tetris, etc.)
         contexto_adicional (dict): Contexto específico del juego
     """
+
+    
+    # 👋 saludos simples (respuesta rápida sin IA)
+    if pregunta.lower().strip() in [
+        "hola","hi","buenas","hello",
+        "hey","holaa","ola","buenos dias","buenas tardes"
+    ]:
+
+        if usuario:
+            return f"¡Hola {usuario.get('username')}! 👋 ¿En qué puedo ayudarte hoy?"
+        else:
+            return "¡Hola! 👋 ¿En qué puedo ayudarte?"
     
     # 🧭 Pista rápida según la página actual
     if pagina:
@@ -97,17 +109,75 @@ def preguntar_agente_general(pregunta, pagina="", contexto_adicional=None):
         return preguntar_agente_english(pregunta, contexto_adicional)
 
     # 🧠 General
-    return responder_general(pregunta)
+    return responder_general(pregunta, usuario)
 
 
-def responder_general(pregunta):
+
+def describir_avatar(avatar):
+
+    if not avatar:
+        return "sin avatar"
+
+    # avatares internos
+    mapa = {
+        "burger.svg": "una hamburguesa 🍔",
+        "robot.svg": "un robot 🤖",
+        "alien.svg": "un alien 👾",
+        "ninja.svg": "un ninja 🥷",
+        "brain.svg": "un cerebro IA 🧠"
+    }
+
+    if avatar in mapa:
+        return mapa[avatar]
+
+    # dicebear → extraer seed
+    if "seed=" in avatar:
+        seed = avatar.split("seed=")[-1]
+
+        mapa_dicebear = {
+            "man_blonde": "un hombre rubio",
+            "man_dark": "un hombre moreno",
+            "man_beard": "un hombre con barba",
+            "man_mustache": "un hombre con bigote",
+            "man_bald_man": "un hombre calvo",
+            "woman_blonde": "una mujer rubia",
+            "woman_dark": "una mujer morena",
+            "woman_red": "una mujer pelirroja",
+            "woman_glasses": "una mujer con gafas",
+            "short_hair_woman": "una mujer de pelo corto"
+        }
+
+        if seed in mapa_dicebear:
+            return mapa_dicebear[seed]
+
+    return avatar
+
+
+def responder_general(pregunta, usuario=None):
     """Respuestas para preguntas generales sobre la plataforma"""
     
     try:
+
+        contexto_usuario = ""
+
+        if usuario:
+
+            avatar_raw = usuario.get("avatar")
+            avatar = describir_avatar(avatar_raw)
+
+            contexto_usuario = f"""
+        Información del usuario actual en la plataforma JuegosJCM:
+        - username: {usuario.get("username")}
+        - avatar: {avatar}
+        """
+
         response = completion(
             model="groq/llama-3.3-70b-versatile",
             messages=[
-                {"role": "system", "content": contexto_general},
+                {
+                    "role": "system",
+                    "content": contexto_general + "\n\n" + contexto_usuario
+                },
                 {"role": "user", "content": pregunta}
             ],
             max_tokens=300,
@@ -115,7 +185,8 @@ def responder_general(pregunta):
         )
 
         return response["choices"][0]["message"]["content"]
-    
+
     except Exception as e:
         print(f"Error en responder_general: {e}")
-        return "Lo siento, tengo problemas técnicos. Por favor, intenta más tarde."
+        return "Lo siento, tengo problemas técnicos. Intenta más tarde."
+

@@ -586,3 +586,18 @@ z-index:9000;
 .ai-toggle:hover{
 transform:scale(1.1);
 }
+
+/* Avatar o foto inico*/
+.header-username{
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+
+.header-avatar{
+    width:32px;
+    height:32px;
+    border-radius:50%;
+    border:2px solid #444;
+    object-fit:cover;
+}

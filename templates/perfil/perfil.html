@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}Perfil{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/perfil.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<div class="perfil-container">
+
+    <h2>👤 Perfil de usuario</h2>
+
+    <!-- Tarjeta usuario -->
+    <div class="perfil-card">
+
+        <div class="avatar-selector">
+
+        <img src="/static/img/avatars/burger.svg" class="avatar-option">
+        <img src="/static/img/avatars/robot.svg" class="avatar-option">
+        <img src="/static/img/avatars/alien.svg" class="avatar-option">
+        <img src="/static/img/avatars/ninja.svg" class="avatar-option">
+        <img src="/static/img/avatars/brain.svg" class="avatar-option">
+        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=man_blonde" class="avatar-option">
+        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=man_dark" class="avatar-option">
+        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=man_beard" class="avatar-option">
+        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=man_mustache" class="avatar-option">
+        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=man_bald_man" class="avatar-option">
+        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=woman_blonde" class="avatar-option">
+        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=woman_glasses" class="avatar-option">
+        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=woman_red" class="avatar-option">
+        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=short_hair_woman" class="avatar-option">
+        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=woman_dark" class="avatar-option">
+
+        </div>
+        
+
+        <div class="perfil-avatar">
+
+        {% if usuario.avatar and usuario.avatar.startswith('http') %}
+        <img src="{{ usuario.avatar }}">
+        {% else %}
+        <img src="{{ url_for('static', filename='img/avatars/' + (usuario.avatar or 'default.svg')) }}">
+        {% endif %}
+
+        </div>
+        
+
+        <div class="perfil-info">
+            <p><strong>Usuario:</strong> {{ usuario.username }}</p>
+            <p><strong>Email:</strong> {{ usuario.email }}</p>
+            <p><strong>Usuario desde:</strong> {{ usuario.created_at }}</p>
+            <button id="btnCambiarNombre" class="btn-secondary">
+                ✏️ Cambiar nombre
+            </button>
+        </div>
+        
+
+    </div>
+
+    <div id="cambiarNombreBox" class="hidden">
+
+        <input type="text" id="nuevoUsername" placeholder="Nuevo nombre">
+
+        <button id="guardarUsername" class="btn-primary">
+            Guardar
+        </button>
+
+    </div>
+
+
+    <!-- Estadísticas -->
+    <!-- <div class="perfil-stats">
+
+        <h3>📊 Estadísticas generales</h3>
+
+        <div class="stats-grid">
+
+            <div class="stat-box">
+                🏆<br>
+                <span>{{ usuario.best_score }}</span>
+                <small>Mejor puntuación</small>
+            </div>
+
+            <div class="stat-box">
+                ⭐<br>
+                <span>{{ usuario.total_score }}</span>
+                <small>Puntuación total</small>
+            </div>
+
+            <div class="stat-box">
+                🎮<br>
+                <span>{{ usuario.level_unlocked }}</span>
+                <small>Nivel desbloqueado</small>
+            </div>
+
+        </div>
+
+    </div> -->
+
+
+    <!-- Historial de juegos -->
+    <!-- <div class="perfil-games">
+
+        <h3>🎮 Historial de juegos</h3>
+
+        <div class="games-links">
+
+            <a href="/historial/tetris" class="game-link">
+                🧱 Tetris
+            </a>
+
+            <a href="/historial/bingo" class="game-link">
+                🎲 Bingo
+            </a>
+
+            <a href="/historial/puzzle" class="game-link">
+                🧩 Puzzle Matemático
+            </a>
+
+            <a href="/historial/english" class="game-link">
+                🇬🇧 English Colors
+            </a>
+
+        </div> -->
+
+    </div>
+
+
+
+</div>
+
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/perfil.js') }}"></script>
+{% endblock %}
