@@ -446,7 +446,7 @@ class TetrisGame {
 
             const pieza = this.piezaActual;
 
-            this.ctx.globalAlpha = 0.05;
+            this.ctx.globalAlpha = 0.11;
 
             for (let i = 0; i < pieza.forma.length; i++) {
                 for (let j = 0; j < pieza.forma[i].length; j++) {
