@@ -42,12 +42,15 @@
 {% block extra_js %}
 <script src="{{ url_for('tetris.static', filename='tetris.js') }}"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const juego = new TetrisGame('canvas-tetris', 'canvas-siguiente');
-        
-        document.getElementById('btn-nueva-partida').addEventListener('click', function() {
-            juego.nuevaPartida();
-        });
+document.addEventListener('DOMContentLoaded', function() {
+
+    document.getElementById('btn-nueva-partida')
+        .addEventListener('click', function() {
+
+        window.juego.nuevaPartida();
+
     });
+
+});
 </script>
 {% endblock %}

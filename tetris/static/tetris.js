@@ -24,7 +24,7 @@ class TetrisGame {
         
         // Intervalo del juego
         this.intervaloJuego = null;
-        this.velocidadBase = 500; // ms
+        this.velocidadBase = 500;
         
         // Detectar si es móvil
         this.esMovil = 'ontouchstart' in window;
@@ -55,6 +55,12 @@ class TetrisGame {
         this.cargarRanking();
         this.cargarEstadisticas();
 
+        // Nuevas variables:
+        this.ultimoFrame = 0;
+        this.tiempoCaida = 0;
+
+        this.peticionActiva = false;
+
         // 🟢 AQUÍ VA EL EVENT LISTENER DE RESIZE 
         window.addEventListener('resize', () => {
             this.esPantallaPequena = window.innerWidth <= 768;
@@ -75,6 +81,37 @@ class TetrisGame {
         });
     }
     
+    gameLoop(timestamp) {
+
+        if (!this.partidaActiva) return;
+
+        const delta = timestamp - this.ultimoFrame;
+        this.ultimoFrame = timestamp;
+
+        this.tiempoCaida += delta;
+
+        // velocidad progresiva (más suave)
+        const velocidad = Math.max(
+            120,
+            this.velocidadBase * Math.pow(0.85, this.nivel - 1)
+        );
+
+        if (this.tiempoCaida > velocidad) {
+
+            // evitar mandar varias peticiones seguidas
+            if (!this.peticionActiva) {
+                this.mover('abajo');
+            }
+
+            this.tiempoCaida = 0;
+        }
+
+        // dibujar siempre (60 FPS)
+        this.dibujar();
+
+        requestAnimationFrame((t) => this.gameLoop(t));
+    }
+
     bindEventos() {
         document.addEventListener('keydown', (e) => {
             // Solo permitir movimientos si hay partida activa y no está terminada
@@ -346,6 +383,7 @@ class TetrisGame {
             document.getElementById('nivel').textContent = this.nivel;
             document.getElementById('lineas').textContent = this.lineas;
             
+            
             console.log('🎨 Llamando a dibujar()');  // 🟢 AÑADIR
             this.dibujar();
         } else {
@@ -354,75 +392,51 @@ class TetrisGame {
     }
     
     async mover(direccion) {
-        if (this.gameOver) return;
-        
+
+        if (!this.partidaActiva || this.gameOver || this.peticionActiva) return;
+
+        this.peticionActiva = true;
+
         try {
+
             const response = await fetch('/tetris/api/mover', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ direccion })
             });
-            
+
             const data = await response.json();
-            console.log('📦 Respuesta mover:', data);  // 🟢 AÑADIR
-            
+
             if (data.success) {
-                console.log('✅ Movimiento exitoso, actualizando...');  // 🟢 AÑADIR
                 this.actualizarEstado(data);
-                
-                if (data.game_over) {
-                    console.log('💀 GAME OVER');  // 🟢 AÑADIR
-                    this.partidaActiva = false;
-                    this.detenerBucleJuego();
-                    this.mostrarGameOver();
-                    this.cargarRanking();
-                    this.cargarEstadisticas();
-                }
             }
-        } catch (error) {
-            console.error('❌ Error al mover:', error);
+
+        } catch(e) {
+            console.error(e);
         }
+
+        this.peticionActiva = false;
     }
     
-    async caidaInstantanea() {
-        if (this.gameOver) return;
+    async caidaInstantanea(){
 
-        const piezaInicial = this.piezaActual?.tipo;
+        if (!this.partidaActiva || this.gameOver) return;
 
-        while (!this.gameOver) {
-            const response = await fetch('/tetris/api/mover', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ direccion: 'abajo' })
-            });
-
-            const data = await response.json();
-            this.actualizarEstado(data);
-
-            const piezaNueva = data.tablero?.pieza_actual?.tipo;
-
-            // si cambia la pieza, parar
-            if (piezaNueva !== piezaInicial) break;
+        for (let i = 0; i < 20; i++) {
+            await this.mover('abajo');
         }
     }
     
     iniciarBucleJuego() {
-        if (this.intervaloJuego) clearInterval(this.intervaloJuego);
-        
-        this.intervaloJuego = setInterval(() => {
-            if (!this.gameOver) this.mover('abajo');
-        }, this.velocidadBase / this.nivel);
+
+        this.ultimoFrame = performance.now();
+        this.tiempoCaida = 0;
+
+        requestAnimationFrame((t) => this.gameLoop(t));
     }
     
     detenerBucleJuego() {
-        if (this.intervaloJuego) {
-            clearInterval(this.intervaloJuego);
-            this.intervaloJuego = null;
-        }
+        this.partidaActiva = false;
     }
     
     dibujar() {
