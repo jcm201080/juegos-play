@@ -2,7 +2,7 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/puzzle_mate.css') }}" />
 {% endblock %} {% block content %}
 <div class="game-container puzzle-container">
-    <h1>Puzzle Matemático</h1>
+    <h1>Reto de Operaciones</h1>
 
     <!-- Panel usuario -->
     <div class="user-panel">
@@ -32,7 +32,7 @@
             <option value="infernal">Infernal 😈</option>
         </select>
 
-        <button id="newPuzzleBtn">Nuevo puzzle</button>
+        <button id="newPuzzleBtn">Nuevo Reto</button>
         <button id="restartBtn">Reiniciar</button>
         <button id="sortNumbersBtn">Ordenar números</button>
     </div>
@@ -58,13 +58,13 @@
     </section>
 
     <section>
-        <h3>🎯 Ranking por dificultad actual (puzzle)</h3>
+        <h3>🎯 Ranking por dificultad actual (Reto)</h3>
         <p id="puzzleDifficultyTitle"></p>
         <ul id="puzzleDifficultyRankingList"></ul>
     </section>
 
     <section>
-        <h3>📜 Historial de partidas (puzzle)</h3>
+        <h3>📜 Historial de partidas (Reto)</h3>
         <button id="puzzleHistoryToggleBtn">Ver / ocultar historial</button>
         <ul id="puzzleHistoryList" style="display: none"></ul>
     </section>

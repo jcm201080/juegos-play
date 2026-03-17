@@ -40,7 +40,7 @@ juegos-play/
 │ ├── home_routes.py # Página principal
 │ ├── admin_routes.py # Panel de administración
 │ ├── juego_mate_routes.py # Juego de cálculo
-│ ├── puzzle_routes.py # Puzzle matemático
+│ ├── puzzle_routes.py # Reto matemático
 │ ├── english_games_routes.py # Juegos de inglés
 │ └── chess_routes.py # Ajedrez
 │
@@ -191,6 +191,26 @@ juegos-play/
 - `GET /tetris/api/ranking` - Ranking global
 - `GET /tetris/api/estadisticas` - Estadísticas personales
 - `POST /tetris/api/terminar-partida` - Guardar partida
+
+
+### 🔢 Reto de Operaciones
+**Juego de lógica matemática basado en completar operaciones:**
+
+**Mecánicas:**
+- Completar ecuaciones con números faltantes
+- Uso de suma, resta, multiplicación y división
+- Sistema de vidas por errores
+- Dificultades progresivas
+
+**Objetivo:**
+Resolver correctamente todas las operaciones usando lógica y deducción.
+
+**Características:**
+- ✔ Sistema de vidas
+- ✔ Generación aleatoria de operaciones
+- ✔ Interfaz interactiva con selección de números
+- ✔ Feedback inmediato (correcto / error)
+
 
 ## 🤖 Sistema de Inteligencia Artificial
 
@@ -562,7 +582,7 @@ Juego de Tetris completo
 
 Juego de cálculo rápido
 
-Puzzle matemático
+Reto matemático
 
 Juegos de inglés
 

@@ -16,13 +16,16 @@ La plataforma incluye:
 - Ranking de jugadores
 
 🧮 Juego de cálculo rápido
-- Juego de matemáticas para practicar operaciones.
+- Juego de matemáticas para practicar operaciones rápidas.
+
+🧮 Reto de operaciones
+- Completa operaciones matemáticas con lógica y estrategia.
 
 🎲 Juego de tablero
 - Juego de recorrido con casillas especiales.
 
-🧩 Puzzle de imágenes
-- Puzzle deslizante.
+🧠 Puzzle matemático (próximamente)
+- Puzzle de lógica con números conectados tipo crucigrama.
 
 📘 English Game
 - Juegos para practicar inglés.

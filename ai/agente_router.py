@@ -13,19 +13,23 @@ def clasificar_pregunta(pregunta):
     """
 
     system_prompt = """
-Clasifica la pregunta del usuario según el juego al que pertenece.
+    Clasifica la pregunta del usuario según el juego al que pertenece.
 
-Opciones posibles:
-- bingo
-- tetris
-- chess
-- puzzle
-- math
-- english
-- general
+    Opciones posibles:
+    - bingo → juego de bingo clásico o online
+    - tetris → juego de bloques tipo tetris
+    - chess → ajedrez
+    - math → juegos de matemáticas (cálculo rápido o reto de operaciones)
+    - puzzle → puzzle matemático tipo lógica o crucigrama numérico
+    - english → juegos de inglés
+    - general → cualquier otra cosa
 
-Responde SOLO con una palabra, sin puntos ni nada más.
-"""
+    IMPORTANTE:
+    - "cálculo", "operaciones", "sumas", "restas" → math
+    - "puzzle", "lógica", "crucigrama", "números conectados" → puzzle
+
+    Responde SOLO con una palabra.
+    """
 
     try:
         response = completion(
@@ -87,14 +91,15 @@ def preguntar_agente_general(pregunta, pagina="", contexto_adicional=None, usuar
             print("🧠 Router IA: chess (por página)")
             # return preguntar_agente_chess(pregunta, contexto_adicional)
 
-        if "puzzle" in pagina_lower:
-            print("🧠 Router IA: puzzle (por página)")
-            # return preguntar_agente_puzzle(pregunta, contexto_adicional)
+        # 🔢 Reto de operaciones (aunque la ruta sea puzzle_mate)
+        if "puzzle_mate" in pagina_lower or "operaciones" in pagina_lower:
+            print("🧠 Router IA: math (reto de operaciones)")
+            return responder_general(pregunta, usuario)
 
     # 🧠 Si no se puede deducir por página → usar IA
     decision = clasificar_pregunta(pregunta)
 
-    print(f"🧠 Router IA: {decision} (por clasificación)")
+    print(f"🧠 Router IA → decisión: {decision} | página: {pagina} | pregunta: {pregunta}")
 
     # 🎱 Bingo
     if decision == "bingo":
@@ -107,6 +112,14 @@ def preguntar_agente_general(pregunta, pagina="", contexto_adicional=None, usuar
     # 📘 English
     if decision == "english":
         return preguntar_agente_english(pregunta, contexto_adicional)
+    # 🧮 Matemáticas (cálculo rápido + reto operaciones)
+    if decision == "math":
+        print("🧠 Router IA: math (clasificación)")
+        return responder_general(pregunta, usuario)
+
+    if decision == "puzzle":
+        print("🧠 Router IA: puzzle (clasificación)")
+        return responder_general(pregunta, usuario)
 
     # 🧠 General
     return responder_general(pregunta, usuario)
