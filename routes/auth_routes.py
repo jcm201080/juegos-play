@@ -65,6 +65,8 @@ def send_reset_email(to_email, reset_link):
 # =========================
 @auth_bp.route("/api/register", methods=["POST"])
 def register():
+    print("🚀 REGISTER ejecutándose en:", __file__)  # 👈 AÑADE ESTO
+
     data = request.get_json() or {}
 
     email = (data.get("email") or "").strip()
