@@ -17,6 +17,7 @@ DB_NAME = os.path.join(DB_FOLDER, "play.db")
 
 
 def get_connection():
+    print("📦 DB PATH REAL:", DB_NAME)
     conn = sqlite3.connect(DB_NAME)
     conn.row_factory = sqlite3.Row
     return conn
