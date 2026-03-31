@@ -11,6 +11,7 @@
     background:#1e1e1e;
     padding:20px;
     border-radius:10px;
+    flex-wrap: wrap; /* clave para responsive */
 }
 
 .perfil-avatar img{
@@ -82,4 +83,34 @@
 .avatar-option:hover{
     transform:scale(1.1);
     border:2px solid #9b5cff;
+}
+
+@media (max-width: 768px) {
+
+    .perfil-card {
+        flex-direction: column;
+        align-items: center;
+        max-width: 95%;
+    }
+
+    .perfil-avatar {
+        order: 1;
+    }
+
+    .perfil-info {
+        order: 2;
+        text-align: center;
+        font-size: 13px;
+    }
+
+    .avatar-selector {
+        order: 3;
+        grid-template-columns: repeat(4, 1fr);
+        justify-items: center;
+        margin-top: 20px;
+    }
+
+    #cambiarNombreBox {
+        text-align: center;
+    }
 }
