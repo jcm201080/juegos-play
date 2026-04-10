@@ -1,0 +1,488 @@
+.puzzle-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.game-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 15px 20px;
+    border-radius: 10px;
+    color: white;
+}
+
+.game-header h1 {
+    margin: 0;
+    font-size: 1.8em;
+}
+
+.level-selector {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.level-selector select {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1em;
+    background: white;
+    cursor: pointer;
+}
+
+.game-stats {
+    display: flex;
+    justify-content: space-around;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.stat-item {
+    font-size: 1.3em;
+    font-weight: bold;
+}
+
+.stat-label {
+    margin-right: 8px;
+    opacity: 0.9;
+}
+
+.puzzle-grid {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    background: white;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.puzzle-grid td {
+    border: 2px solid #333;
+    width: 80px;
+    height: 80px;
+    text-align: center;
+    font-size: 1.5em;
+    font-weight: bold;
+    position: relative;
+    background: white;
+}
+
+.puzzle-cell {
+    transition: all 0.3s;
+}
+
+.puzzle-cell.fixed {
+    background-color: #e3f2fd;
+    color: #1976d2;
+}
+
+.puzzle-cell.empty {
+    background-color: #fff3e0;
+    cursor: pointer;
+    color: #f57c00;
+}
+
+.puzzle-cell.empty:hover {
+    background-color: #ffe0b2;
+}
+
+.puzzle-cell.filled {
+    background-color: #c8e6c9;
+    color: #2e7d32;
+}
+
+/* Operadores */
+.puzzle-cell[data-right-op]::after {
+    content: attr(data-right-op);
+    position: absolute;
+    right: -20px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-weight: bold;
+    font-size: 1.2em;
+    color: #f57c00;
+    background: white;
+    width: 25px;
+    height: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 2px solid #333;
+    z-index: 2;
+}
+
+.puzzle-cell[data-down-op]::before {
+    content: attr(data-down-op);
+    position: absolute;
+    bottom: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-weight: bold;
+    font-size: 1.2em;
+    color: #f57c00;
+    background: white;
+    width: 25px;
+    height: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 2px solid #333;
+    z-index: 2;
+}
+
+/* Resultados */
+.puzzle-cell[data-right-result] {
+    border-right: 3px solid #4caf50;
+}
+
+.puzzle-cell[data-down-result] {
+    border-bottom: 3px solid #4caf50;
+}
+
+/* Números disponibles */
+.numbers-pool {
+    margin: 30px 0;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.numbers-pool h3 {
+    margin: 0 0 15px 0;
+    color: #333;
+}
+
+.numbers-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center;
+    min-height: 100px;
+}
+
+.number-token {
+    width: 70px;
+    height: 70px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 15px;
+    font-size: 1.8em;
+    font-weight: bold;
+    cursor: grab;
+    box-shadow: 0 4px 10px rgba(102, 126, 234, 0.4);
+    transition: all 0.2s;
+}
+
+.number-token:hover {
+    transform: scale(1.1) translateY(-5px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.6);
+}
+
+.number-token:active {
+    cursor: grabbing;
+    transform: scale(0.95);
+}
+
+/* Controles */
+.game-controls {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin: 30px 0;
+}
+
+.btn-success, .btn-info, .btn-warning, .btn-primary {
+    padding: 12px 30px;
+    border: none;
+    border-radius: 50px;
+    color: white;
+    cursor: pointer;
+    font-size: 1.1em;
+    font-weight: bold;
+    transition: all 0.3s;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+}
+
+.btn-info {
+    background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+}
+
+.btn-warning {
+    background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.btn-success:hover, .btn-info:hover, .btn-warning:hover, .btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+}
+
+.btn-success:active, .btn-info:active, .btn-warning:active, .btn-primary:active {
+    transform: translateY(0);
+}
+
+/* Ranking */
+.ranking-section {
+    margin-top: 40px;
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.ranking-section h3 {
+    margin: 0 0 20px 0;
+    color: #333;
+    font-size: 1.5em;
+}
+
+.ranking-table {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.ranking-table th {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 15px;
+    font-size: 1.1em;
+}
+
+.ranking-table td {
+    padding: 12px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+    font-size: 1.1em;
+}
+
+.ranking-table tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+.ranking-table tr:hover {
+    background-color: #e3f2fd;
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.7);
+    animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-content {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    margin: 10% auto;
+    padding: 30px;
+    border-radius: 20px;
+    width: 80%;
+    max-width: 500px;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    animation: slideIn 0.3s;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-100px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.close {
+    position: absolute;
+    right: 20px;
+    top: 15px;
+    font-size: 30px;
+    cursor: pointer;
+    color: white;
+    transition: color 0.2s;
+}
+
+.close:hover {
+    color: #f44336;
+}
+
+#hintText {
+    font-size: 1.3em;
+    line-height: 1.6;
+    margin: 20px 0;
+    padding: 20px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 10px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .game-header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+    
+    .puzzle-grid td {
+        width: 60px;
+        height: 60px;
+        font-size: 1.2em;
+    }
+    
+    .puzzle-cell[data-right-op]::after,
+    .puzzle-cell[data-down-op]::before {
+        width: 20px;
+        height: 20px;
+        font-size: 0.9em;
+    }
+    
+    .number-token {
+        width: 60px;
+        height: 60px;
+        font-size: 1.5em;
+    }
+    
+    .game-controls {
+        flex-direction: column;
+    }
+    
+    .btn-success, .btn-info, .btn-warning, .btn-primary {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .puzzle-grid td {
+        width: 45px;
+        height: 45px;
+        font-size: 1em;
+    }
+    
+    .game-stats {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+    
+    .number-token {
+        width: 50px;
+        height: 50px;
+        font-size: 1.2em;
+    }
+}
+
+.puzzle-grid {
+    border-collapse: separate;
+    border-spacing: 10px;
+    margin: 0 auto;
+}
+
+.puzzle-cell {
+    width: 60px;
+    height: 60px;
+    text-align: center;
+    vertical-align: middle;
+    font-size: 1.5rem;
+    font-weight: bold;
+    border-radius: 8px;
+}
+
+.fixed, .empty, .filled {
+    background-color: #8bc34a; /* El verde de tu imagen */
+    color: white;
+    box-shadow: 0 4px #689f38;
+}
+
+.empty {
+    background-color: #aed581;
+    cursor: pointer;
+}
+
+.operator {
+    background: transparent;
+    color: #333;
+    font-size: 1.8rem;
+}
+
+.number-token {
+    display: inline-block;
+    width: 50px;
+    height: 50px;
+    line-height: 50px;
+    background: #8bc34a;
+    color: white;
+    margin: 5px;
+    border-radius: 5px;
+    cursor: grab;
+    text-align: center;
+    font-weight: bold;
+}
+
+/* Contenedor del número a colocar */
+.empty-slot {
+    background-color: #ffffff;
+    border: 3px dashed #8bc34a;
+    color: #8bc34a;
+    cursor: pointer;
+}
+
+/* Números que ya vienen en el puzzle */
+.fixed-number {
+    background-color: #f1f8e9;
+    color: #33691e;
+}
+
+/* Celdas de resultado (las más importantes para guiar al jugador) */
+.result-cell {
+    background-color: #388e3c;
+    color: white;
+    font-weight: 900;
+    border-radius: 4px;
+}
+
+/* Operadores e iguales */
+.operator-cell {
+    background: none;
+    font-size: 1.4rem;
+    color: #555;
+    border: none;
+}

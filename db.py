@@ -235,6 +235,48 @@ def init_db():
         """
     )
 
+    # =====================================================
+    # 🔹 TABLAS PARA MATH PUZZLE (AÑADIR ESTO)
+    # =====================================================
+    
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS math_puzzle_stats (
+            user_id INTEGER PRIMARY KEY,
+            games_played INTEGER DEFAULT 0,
+            total_score INTEGER DEFAULT 0,
+            best_score INTEGER DEFAULT 0,
+            avg_time INTEGER DEFAULT 0,
+            level_1_best INTEGER DEFAULT 0,
+            level_2_best INTEGER DEFAULT 0,
+            level_3_best INTEGER DEFAULT 0,
+            FOREIGN KEY(user_id) REFERENCES users(id)
+        )
+    """)
+    
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS math_puzzle_scores (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            puzzle_id TEXT NOT NULL,
+            level INTEGER NOT NULL,
+            score INTEGER NOT NULL,
+            time_spent INTEGER NOT NULL,
+            lives_remaining INTEGER DEFAULT 5,
+            completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(user_id) REFERENCES users(id)
+        )
+    """)
+    
+    cur.execute("""
+        CREATE INDEX IF NOT EXISTS idx_math_puzzle_scores_level 
+        ON math_puzzle_scores(level, score DESC)
+    """)
+    
+    cur.execute("""
+        CREATE INDEX IF NOT EXISTS idx_math_puzzle_scores_user 
+        ON math_puzzle_scores(user_id)
+    """)
+
     # ===============================
     # 👤 USUARIOS POR DEFECTO
     # ===============================
@@ -575,3 +617,214 @@ def obtener_ultimas_partidas_tetris(user_id, limite=5):
     conn.close()
     
     return [dict(row) for row in partidas]
+
+
+
+# =====================================================
+# 🔹 FUNCIONES PARA MATH PUZZLE (GRID PUZZLE)
+# =====================================================
+
+def ensure_math_puzzle_stats(user_id):
+    """Asegura que existe el registro de estadísticas para un usuario"""
+    conn = get_connection()
+    cur = conn.cursor()
+    
+    # Verificar si la tabla existe, si no, crearla
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS math_puzzle_stats (
+            user_id INTEGER PRIMARY KEY,
+            games_played INTEGER DEFAULT 0,
+            total_score INTEGER DEFAULT 0,
+            best_score INTEGER DEFAULT 0,
+            avg_time INTEGER DEFAULT 0,
+            level_1_best INTEGER DEFAULT 0,
+            level_2_best INTEGER DEFAULT 0,
+            level_3_best INTEGER DEFAULT 0,
+            FOREIGN KEY(user_id) REFERENCES users(id)
+        )
+    """)
+    
+    # Crear tabla de puntuaciones si no existe
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS math_puzzle_scores (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            puzzle_id TEXT NOT NULL,
+            level INTEGER NOT NULL,
+            score INTEGER NOT NULL,
+            time_spent INTEGER NOT NULL,
+            lives_remaining INTEGER DEFAULT 5,
+            completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(user_id) REFERENCES users(id)
+        )
+    """)
+    
+    # Crear índices para mejorar rendimiento
+    cur.execute("""
+        CREATE INDEX IF NOT EXISTS idx_math_puzzle_scores_level 
+        ON math_puzzle_scores(level, score DESC)
+    """)
+    
+    cur.execute("""
+        CREATE INDEX IF NOT EXISTS idx_math_puzzle_scores_user 
+        ON math_puzzle_scores(user_id)
+    """)
+    
+    # Insertar registro si no existe
+    cur.execute("""
+        INSERT OR IGNORE INTO math_puzzle_stats (user_id)
+        VALUES (?)
+    """, (user_id,))
+    
+    conn.commit()
+    conn.close()
+
+def guardar_puntuacion_math_puzzle(user_id, puzzle_id, level, score, time_spent, lives_remaining=5):
+    """Guarda una puntuación del puzzle matemático"""
+    conn = get_connection()
+    cur = conn.cursor()
+    
+    # Asegurar que existen las estadísticas
+    cur.execute("""
+        INSERT OR IGNORE INTO math_puzzle_stats (user_id)
+        VALUES (?)
+    """, (user_id,))
+    
+    # Insertar la puntuación
+    cur.execute("""
+        INSERT INTO math_puzzle_scores 
+        (user_id, puzzle_id, level, score, time_spent, lives_remaining)
+        VALUES (?, ?, ?, ?, ?, ?)
+    """, (user_id, puzzle_id, level, score, time_spent, lives_remaining))
+    
+    # Actualizar estadísticas
+    cur.execute("""
+        UPDATE math_puzzle_stats SET
+            games_played = games_played + 1,
+            total_score = total_score + ?,
+            avg_time = (avg_time * (games_played) + ?) / (games_played + 1),
+            best_score = MAX(best_score, ?),
+            level_1_best = CASE WHEN ? = 1 THEN MAX(level_1_best, ?) ELSE level_1_best END,
+            level_2_best = CASE WHEN ? = 2 THEN MAX(level_2_best, ?) ELSE level_2_best END,
+            level_3_best = CASE WHEN ? = 3 THEN MAX(level_3_best, ?) ELSE level_3_best END
+        WHERE user_id = ?
+    """, (score, time_spent, score, level, score, level, score, level, score, user_id))
+    
+    conn.commit()
+    conn.close()
+    
+    return True
+
+def obtener_ranking_math_puzzle(level=1, limite=10):
+    """Obtiene el ranking por nivel"""
+    conn = get_connection()
+    cur = conn.cursor()
+    
+    cur.execute("""
+        SELECT 
+            u.username,
+            u.avatar,
+            mps.score,
+            mps.time_spent,
+            mps.lives_remaining,
+            u.id as user_id
+        FROM math_puzzle_scores mps
+        JOIN users u ON u.id = mps.user_id
+        WHERE mps.level = ?
+        ORDER BY mps.score DESC, mps.time_spent ASC
+        LIMIT ?
+    """, (level, limite))
+    
+    ranking = cur.fetchall()
+    conn.close()
+    
+    return [dict(row) for row in ranking]
+
+def obtener_estadisticas_math_puzzle(user_id):
+    """Obtiene las estadísticas completas de un usuario"""
+    conn = get_connection()
+    cur = conn.cursor()
+    
+    cur.execute("""
+        SELECT * FROM math_puzzle_stats
+        WHERE user_id = ?
+    """, (user_id,))
+    
+    stats = cur.fetchone()
+    conn.close()
+    
+    return dict(stats) if stats else {
+        'user_id': user_id,
+        'games_played': 0,
+        'total_score': 0,
+        'best_score': 0,
+        'avg_time': 0,
+        'level_1_best': 0,
+        'level_2_best': 0,
+        'level_3_best': 0
+    }
+
+def obtener_ultimas_partidas_math_puzzle(user_id, limite=5):
+    """Obtiene las últimas partidas de un usuario"""
+    conn = get_connection()
+    cur = conn.cursor()
+    
+    cur.execute("""
+        SELECT * FROM math_puzzle_scores
+        WHERE user_id = ?
+        ORDER BY completed_at DESC
+        LIMIT ?
+    """, (user_id, limite))
+    
+    partidas = cur.fetchall()
+    conn.close()
+    
+    return [dict(row) for row in partidas]
+
+def obtener_mejor_puntuacion_nivel(user_id, level):
+    """Obtiene la mejor puntuación de un usuario en un nivel específico"""
+    conn = get_connection()
+    cur = conn.cursor()
+    
+    cur.execute("""
+        SELECT score, time_spent, completed_at
+        FROM math_puzzle_scores
+        WHERE user_id = ? AND level = ?
+        ORDER BY score DESC, time_spent ASC
+        LIMIT 1
+    """, (user_id, level))
+    
+    result = cur.fetchone()
+    conn.close()
+    
+    return dict(result) if result else None
+
+def obtener_estadisticas_globales_math_puzzle():
+    """Obtiene estadísticas globales del juego"""
+    conn = get_connection()
+    cur = conn.cursor()
+    
+    # Total de partidas jugadas
+    cur.execute("SELECT COUNT(*) FROM math_puzzle_scores")
+    total_partidas = cur.fetchone()[0]
+    
+    # Puntuación media global
+    cur.execute("SELECT AVG(score) FROM math_puzzle_scores")
+    score_medio = cur.fetchone()[0] or 0
+    
+    # Mejor puntuación global
+    cur.execute("SELECT MAX(score) FROM math_puzzle_scores")
+    max_score = cur.fetchone()[0] or 0
+    
+    # Total de jugadores únicos
+    cur.execute("SELECT COUNT(DISTINCT user_id) FROM math_puzzle_scores")
+    jugadores_unicos = cur.fetchone()[0]
+    
+    conn.close()
+    
+    return {
+        'total_partidas': total_partidas,
+        'score_medio': round(score_medio, 2),
+        'max_score': max_score,
+        'jugadores_unicos': jugadores_unicos
+    }

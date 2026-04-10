@@ -67,6 +67,12 @@ from bingo.routes.ranking_routes import ranking_bp
 from bingo.bingo_online.routes.bingo_online_routes import bingo_online_routes
 from bingo.bingo_online.sockets.bingo_online_socket import register_bingo_online_sockets
 from bingo.classic.sockets.bingo_socket import salas_bingo
+# En app.py, añadir:
+
+# puzzle
+from math_puzzle.routes.math_puzzle_routes import math_puzzle_bp
+
+
 
 from routes.perfil_routes import perfil_bp
 
@@ -182,6 +188,7 @@ app.register_blueprint(bingo_online_routes)
 app.register_blueprint(ranking_bp)
 app.register_blueprint(admin_bp)
 app.register_blueprint(perfil_bp)
+app.register_blueprint(math_puzzle_bp)
 
 # =========================
 # 🧠 Agente general

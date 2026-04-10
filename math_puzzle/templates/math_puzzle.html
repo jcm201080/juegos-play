@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Math Grid Puzzle - Juegos Play{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('math_puzzle.static', filename='css/math_puzzle.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="puzzle-container">
+    <!-- Header del juego -->
+    <div class="game-header">
+        <h1>🧩 Math Grid Puzzle</h1>
+        <div class="level-selector">
+            <label>Nivel:</label>
+            <select id="levelSelect">
+                <option value="1">Fácil</option>
+                <option value="2" selected>Medio</option>
+                <option value="3">Difícil</option>
+            </select>
+            <button id="newGameBtn" class="btn-primary">Nuevo Juego</button>
+        </div>
+    </div>
+
+    <!-- Estadísticas de juego -->
+    <div class="game-stats">
+        <div class="stat-item">
+            <span class="stat-label">⏱️ Tiempo:</span>
+            <span id="timer">00:00</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label">❤️ Vidas:</span>
+            <span id="lives">5</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label">🏆 Puntuación:</span>
+            <span id="score">0</span>
+        </div>
+    </div>
+
+    <!-- Grid del puzzle -->
+    <div class="puzzle-area">
+        <table id="puzzleGrid" class="puzzle-grid">
+            <!-- Se generará dinámicamente con JS -->
+        </table>
+    </div>
+
+    <!-- Números disponibles -->
+    <div class="numbers-pool">
+        <h3>📦 Números disponibles:</h3>
+        <div id="availableNumbers" class="numbers-container">
+            <!-- Se generará dinámicamente -->
+        </div>
+    </div>
+
+    <!-- Controles -->
+    <div class="game-controls">
+        <button id="checkSolutionBtn" class="btn-success">✓ Verificar solución</button>
+        <button id="hintBtn" class="btn-info">💡 Pista (IA)</button>
+        <button id="resetBtn" class="btn-warning">↺ Reiniciar</button>
+    </div>
+
+    <!-- Ranking -->
+    <div class="ranking-section">
+        <h3>🏆 Ranking - Nivel <span id="rankingLevel">2</span></h3>
+        <table id="rankingTable" class="ranking-table">
+            <thead>
+                <tr>
+                    <th>Pos</th>
+                    <th>Jugador</th>
+                    <th>Puntuación</th>
+                    <th>Tiempo</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Se llenará con AJAX -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal de pista IA -->
+<div id="hintModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h3>💡 Pista del asistente</h3>
+        <p id="hintText">Cargando pista...</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('math_puzzle.static', filename='js/math_puzzle.js') }}"></script>
+{% endblock %}

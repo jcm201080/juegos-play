@@ -83,7 +83,7 @@ class TetrisGame {
     
     gameLoop(timestamp) {
 
-        if (!this.partidaActiva) return;
+        if (!this.partidaActiva || this.gameOver) return;
 
         const delta = timestamp - this.ultimoFrame;
         this.ultimoFrame = timestamp;
@@ -370,6 +370,9 @@ class TetrisGame {
             this.nivel = data.tablero.nivel || 1;
             this.lineas = data.tablero.lineas_completadas || 0;
             this.gameOver = data.tablero.game_over || false;
+            if (this.gameOver) {
+                this.detenerBucleJuego();
+            }
             
             console.log('🔄 Estado actualizado:', {  // 🟢 AÑADIR
                 puntuacion: this.puntuacion,
@@ -512,6 +515,10 @@ class TetrisGame {
             this.ctx.fillStyle = 'rgba(255,255,255,0.8)';
             this.ctx.font = 'bold 20px Arial';
             this.ctx.textAlign = 'center';
+        }
+        // Mostrar GAME OVER
+        if (this.gameOver) {
+            this.mostrarGameOver();
         }
         
         console.log('✅ Dibujo completado');  // 🟢 AÑADIR
